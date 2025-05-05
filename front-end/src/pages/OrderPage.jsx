@@ -1,10 +1,10 @@
-import CartItem from "./CartItem";
+import CartItem from "../compontes/ui/CartItem";
 import { useContext, useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 
-import { ShopContext } from "./context/ShopContext";
+import { ShopContext } from "../compontes/context/ShopContext";
 import { toast } from "react-toastify";
-import axiosInstance from "./axiosInstance";
+import axiosInstance from "../hooks/axiosInstance";
 
 function OrderPage() {
   const { setCart } = useContext(ShopContext);

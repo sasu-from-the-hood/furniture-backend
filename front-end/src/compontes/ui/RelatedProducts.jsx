@@ -1,5 +1,5 @@
 import React, { useContext, useEffect, useState } from "react";
-import { ShopContext } from "./context/ShopContext";
+import { ShopContext } from "../context/ShopContext";
 import ShopItemCard from "./ShopItemCard";
 import { Link } from "react-router-dom";
 import PropTypes from 'prop-types';

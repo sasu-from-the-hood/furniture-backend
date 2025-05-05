@@ -1,9 +1,9 @@
 import { Link } from "react-router-dom";
-import ShopItemCard from "./ShopItemCard";
-import ShopItemSkeleton from "./ShopItemSkeleton"; // Import Skeleton Component
-import shophero from "./assets/shophero.jpg";
+import ShopItemCard from "../ui/ShopItemCard";
+import ShopItemSkeleton from "../ui/ShopItemSkeleton"; // Import Skeleton Component
+import shophero from "../../assets/shophero.jpg";
 import { useContext, useEffect, useState } from "react";
-import { ShopContext } from "./context/ShopContext";
+import { ShopContext } from "../context/ShopContext";
 import ProductCategories from "./ProductCategories";
 
 function Shop() {

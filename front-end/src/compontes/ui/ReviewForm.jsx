@@ -1,7 +1,7 @@
 import { useState, useContext } from "react";
 import { toast } from "react-toastify";
-import { ShopContext } from "./context/ShopContext";
-import axiosInstance from "./axiosInstance";
+import { ShopContext } from "../context/ShopContext";
+import axiosInstance from "../../hooks/axiosInstance";
 function ReviewForm({ productId }) {
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");

@@ -1,7 +1,7 @@
-import Header from "./Header";
-import Footer from "./Footer";
+// import Header from "./Header";
+// import Footer from "../sections/Footer";
 import { useContext, useEffect } from "react";
-import { ShopContext } from "./context/ShopContext";
+import { ShopContext } from "../context/ShopContext";
 import { ClipLoader } from "react-spinners";
 
 function TrackOrder() {
