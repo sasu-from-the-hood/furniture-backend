@@ -2,21 +2,21 @@
   "development": {
     "username": "root",
     "password": null,
-    "database": "database_development",
+    "database": "furniture_catalog_dev",
     "host": "127.0.0.1",
     "dialect": "mysql"
   },
   "test": {
     "username": "root",
     "password": null,
-    "database": "database_test",
+    "database": "furniture_catalog_test",
     "host": "127.0.0.1",
     "dialect": "mysql"
   },
   "production": {
     "username": "root",
     "password": null,
-    "database": "database_production",
+    "database": "furniture_catalog_prod",
     "host": "127.0.0.1",
     "dialect": "mysql"
   }
