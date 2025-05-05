@@ -1,6 +1,6 @@
 // Import necessary dependencies
 import React, { useContext, useState } from "react";
-import { ShopContext } from "./context/ShopContext";
+import { ShopContext } from "../compontes/context/ShopContext";
 import { useNavigate } from "react-router-dom";
 
 function MyProfile() {

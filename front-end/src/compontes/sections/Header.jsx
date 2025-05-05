@@ -1,7 +1,7 @@
 import { useState, useEffect, useContext } from "react";
 import { Link, useNavigate, useLocation, NavLink } from "react-router-dom";
-import logo from "./assets/logo.jpg";
-import { ShopContext } from "./context/ShopContext";
+import logo from "../../assets/logo.jpg";
+import { ShopContext } from "../context/ShopContext";
 
 function Header() {
   const [showHeader, setShowHeader] = useState(true);

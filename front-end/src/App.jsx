@@ -1,21 +1,21 @@
 import { createBrowserRouter, RouterProvider, Outlet } from "react-router-dom";
-import Home from "./Home.jsx";
-import Shop from "./Shop.jsx";
-import ProductDetail from "./ProductDetail.jsx";
-import Cart from "./Cart.jsx";
-import NotFound from "./NotFound.jsx";
-import OrderPage from "./OrderPage.jsx";
-import TrackOrder from "./TrackOrder.jsx";
+import Home from "./pages/Home.jsx";
+import Shop from "./compontes/sections/Shop.jsx";
+import ProductDetail from "./compontes/sections/ProductDetail.jsx";
+import Cart from "./compontes/ui/Cart.jsx";
+import NotFound from "./pages/NotFound.jsx";
+import OrderPage from "./pages/OrderPage.jsx";
+import TrackOrder from "./compontes/ui/TrackOrder.jsx";
 
-import Footer from "./Footer.jsx";
-import Login from "./Login.jsx";
-import MyProfile from "./MyProfile.jsx";
+import Footer from "./compontes/sections/Footer.jsx";
+import Login from "./pages/Login.jsx";
+import MyProfile from "./pages/MyProfile.jsx";
 import { ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
-import Header from "./Header.jsx";
-import SearchBar from "./SearchBar.jsx";
-import About from "./About.jsx";
-import ShopContextProvider from "./context/ShopContext.jsx";
+import Header from "./compontes/sections/Header.jsx";
+import SearchBar from "./compontes/ui/SearchBar.jsx";
+import About from "./compontes/sections/About.jsx";
+import ShopContextProvider from "./compontes/context/ShopContext.jsx";
 
 function Layout() {
   return (

@@ -1,5 +1,5 @@
 import { useParams, Link } from "react-router-dom";
-import { ShopContext } from "./context/ShopContext";
+import { ShopContext } from "../context/ShopContext";
 import { useContext, useState, useEffect } from "react";
 import { toast } from "react-toastify";
 import CartItem from "./CartItem"

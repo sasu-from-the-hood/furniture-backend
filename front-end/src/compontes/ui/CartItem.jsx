@@ -1,6 +1,6 @@
 import PropTypes from 'prop-types';
 import { useState, useContext, useEffect } from 'react';
-import { ShopContext } from './context/ShopContext';
+import { ShopContext } from '../context/ShopContext';
 
 function CartItem(props) {
 

@@ -1,8 +1,8 @@
 import React from "react";
-import logo from "./assets/logo.jpg";
-import rug from "./assets/rug.jpeg";
-import lamp from "./assets/lux lamp.jpeg";
-import chair from "./assets/about1.jpeg";
+import logo from "../../assets/logo.jpg";
+import rug from "../../assets/rug.jpeg";
+import lamp from "../../assets/lux lamp.jpeg";
+import chair from "../../assets/about1.jpeg";
 
 
 const About = () => {

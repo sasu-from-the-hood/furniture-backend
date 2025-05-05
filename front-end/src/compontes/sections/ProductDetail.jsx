@@ -1,11 +1,11 @@
 import { useParams, Link } from "react-router-dom";
 import { useState, useContext, useEffect } from "react";
-import { ShopContext } from "./context/ShopContext";
-import ReviewCard from "./ReviewCard";
-import ReviewForm from "./ReviewForm";
-import RelatedProduct from "./RelatedProducts";
+import { ShopContext } from "../context/ShopContext";
+import ReviewCard from "../ui/ReviewCard";
+import ReviewForm from "../ui/ReviewForm";
+import RelatedProduct from "../ui/RelatedProducts";
 import { toast } from "react-toastify";
-import axiosInstance from "./axiosInstance";
+import axiosInstance from "../../hooks/axiosInstance";
 import { ClipLoader } from "react-spinners";
 
 function ProductDetail() {

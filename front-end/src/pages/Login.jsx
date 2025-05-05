@@ -1,10 +1,10 @@
 import { useContext, useState } from "react";
-import { ShopContext } from "./context/ShopContext";
+import { ShopContext } from "../compontes/context/ShopContext";
 import { useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
 import axios from "axios";
 import { useEffect } from "react";
-import axiosInstance from "./axiosInstance";
+import axiosInstance from "../hooks/axiosInstance";
 
 
 function Login() {

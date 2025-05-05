@@ -1,14 +1,14 @@
 import { useContext, useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import HomeCards from "./HomeCards";
-import fridge from "./assets/Fridge.png";
-import sofa from "./assets/sofa.png";
-import light from "./assets/light.jpg";
-import door from "./assets/door.jpeg";
-import cabinet from "./assets/cabinet.png";
-import decor from "./assets/decor.jpg";
-import sink from "./assets/sink.png";
-import { ShopContext } from "./context/ShopContext.jsx";
+// import HomeCards from "./HomeCards";
+// import fridge from "./assets/Fridge.png";
+import sofa from "../assets/sofa.png";
+import light from "../assets/light.jpg";
+// import door from "./assets/door.jpeg";
+// import cabinet from "./assets/cabinet.png";
+import decor from "../assets/decor.jpg";
+// import sink from "./assets/sink.png";
+import { ShopContext } from "../compontes/context/ShopContext.jsx";
 
 function Home() {
   const { products, setSelectedCategory } = useContext(ShopContext);
