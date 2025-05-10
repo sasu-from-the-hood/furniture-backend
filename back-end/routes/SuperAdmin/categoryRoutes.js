@@ -28,7 +28,6 @@ router.put(
   authenticate, 
   isAdmin, 
   hasPermission('categories', 'update'), 
-  validateUpdateCategory, 
   categoryController.updateCategory
 );
 

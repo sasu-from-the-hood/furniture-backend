@@ -1,4 +1,4 @@
-import React, { useContext, useEffect, useState } from "react";
+import { useContext, useEffect, useState } from "react";
 import { ShopContext } from "../context/ShopContext";
 import ShopItemCard from "./ShopItemCard";
 import { Link } from "react-router-dom";
@@ -9,10 +9,18 @@ const RelatedProduct = ({ subCategoryId }) => {
     const [related, setRelated] = useState([]);
 
     useEffect(() => {
-        if (products.length > 0) {
-            let productsCopy = products.slice();
-            productsCopy = productsCopy.filter((item) => subCategoryId === item.subCategoryId);
-            setRelated(productsCopy);
+        if (products && products.length > 0 && subCategoryId) {
+            // Get products from the same category (using categoryId instead of subCategoryId)
+            let relatedProducts = products.filter(item =>
+                item.categoryId === parseInt(subCategoryId) ||
+                item.categoryId === subCategoryId
+            );
+
+            // Limit to 5 related products
+            relatedProducts = relatedProducts.slice(0, 5);
+
+            console.log(`Found ${relatedProducts.length} related products for category ${subCategoryId}`);
+            setRelated(relatedProducts);
         }
     }, [subCategoryId, products]);
 
@@ -24,22 +32,31 @@ const RelatedProduct = ({ subCategoryId }) => {
                 </h1>
             </div>
             <div className="grid grid-cols-1 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4 gap-y-6">
-                {related.map((item, index) => (
-                    <Link key={index} to={`/product/${item.id}`}>
-                        <ShopItemCard
-                            image={item.images[0]?.url || "/default-image.jpg"}
-                            name={item.name}
-                            price={item.price}
-                        />
-                    </Link>
-                ))}
+                {related.length > 0 ? (
+                    related.map((item, index) => (
+                        <Link key={item.id || index} to={`/product/${item.id}`}>
+                            <ShopItemCard
+                                image={(item.images && item.images.length > 0)
+                                    ? item.images[0]?.url
+                                    : "/default-image.jpg"}
+                                name={item.name || item.title}
+                                price={item.price}
+                            />
+                        </Link>
+                    ))
+                ) : (
+                    <p className="col-span-full text-center text-gray-500">No related products found</p>
+                )}
             </div>
         </div>
     );
 };
 
 RelatedProduct.propTypes = {
-    subCategoryId: PropTypes.string.isRequired,
+    subCategoryId: PropTypes.oneOfType([
+        PropTypes.string,
+        PropTypes.number
+    ])
 };
 
 export default RelatedProduct;

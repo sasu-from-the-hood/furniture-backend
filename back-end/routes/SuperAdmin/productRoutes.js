@@ -7,6 +7,8 @@ const {
   validateUpdateProduct,
   validateProductImages
 } = require('../../middleware/productValidation');
+const processImages = require('../../middleware/processImages');
+const handleFileUpload = require('../../middleware/uploadMiddleware');
 
 // Public routes
 router.get('/', productController.getAllProducts);
@@ -18,7 +20,9 @@ router.post(
   authenticate,
   isAdmin,
   hasPermission('products', 'create'),
+  handleFileUpload,
   validateCreateProduct,
+  processImages,
   productController.createProduct
 );
 
@@ -27,7 +31,9 @@ router.put(
   authenticate,
   isAdmin,
   hasPermission('products', 'update'),
+  handleFileUpload,
   validateUpdateProduct,
+  processImages,
   productController.updateProduct
 );
 
@@ -52,7 +58,9 @@ router.put(
   authenticate,
   isAdmin,
   hasPermission('products', 'update'),
+  handleFileUpload,
   validateProductImages,
+  processImages,
   productController.updateProductImages
 );
 

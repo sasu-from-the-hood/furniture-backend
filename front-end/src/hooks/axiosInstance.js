@@ -1,10 +1,9 @@
 import axios from "axios";
 import { toast } from "react-toastify";
+import { API_URL } from "../config/index";
 
-// const BASE_URL = "http://localhost:3000/api";
-const BASE_URL = "https://furniture-backend.duckdns.org/api";
 const axiosInstance = axios.create({
-  baseURL: BASE_URL,
+  baseURL: API_URL,
 });
 
 axiosInstance.defaults.headers.common["Content-Type"] = "application/json";
@@ -30,36 +29,41 @@ axiosInstance.interceptors.response.use(
     const originalRequest = error.config;
     console.log(error);
     console.log("Currently in interceptor");
-    if (error.response.status === 403 && !originalRequest._retry) {
-      originalRequest._retry = true;
-      try {
-        console.log("Refreshing token...");
 
-        const response = await axios.get(`${BASE_URL}/auth/refresh`, {
-          withCredentials: true,
-        });
+    if (error.response) {
+      if (error.response.status === 403 && !originalRequest._retry) {
+        originalRequest._retry = true;
+        try {
+          console.log("Refreshing token...");
 
-        console.log("Response from refresh token", response);
+          const response = await axios.get(`${API_URL}/auth/refresh`, {
+            withCredentials: true,
+          });
 
-        const newToken = response.data.token;
-        localStorage.setItem("token", newToken);
-        axiosInstance.defaults.headers.common[
-          "Authorization"
-        ] = `Bearer ${newToken}`;
-        originalRequest.headers["Authorization"] = `Bearer ${newToken}`;
-        console.log("Retrying original request with new token");
-        // Immediately retry the original request without requiring further action
-        return axiosInstance(originalRequest);
-      } catch (err) {
-        console.log("Error refreshing token:", err);
-        toast.error("Session expired. Please log in again.");
-        // localStorage.removeItem("token");
-        // window.location.href = "/login";
+          console.log("Response from refresh token", response);
+
+          const newToken = response.data.token;
+          localStorage.setItem("token", newToken);
+          axiosInstance.defaults.headers.common[
+            "Authorization"
+          ] = `Bearer ${newToken}`;
+          originalRequest.headers["Authorization"] = `Bearer ${newToken}`;
+          console.log("Retrying original request with new token");
+          // Immediately retry the original request without requiring further action
+          return axiosInstance(originalRequest);
+        } catch (err) {
+          console.log("Error refreshing token:", err);
+          toast.error("Session expired. Please log in again.");
+        }
+      } else if (error.response.status === 401) {
+        toast.error("Please login first.");
       }
-    } else if (error.response.status === 401) {
-      toast.error("Please login first.");
-      // window.location.href = "/login";
+    } else {
+      // Network error or server not responding
+      toast.error("Network error. Please check your connection.");
+      console.error("Network Error:", error.message);
     }
+
     return Promise.reject(error);
   }
 );

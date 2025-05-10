@@ -34,22 +34,21 @@ Access to different parts of the system is controlled by the user's role:
 
 ### Public Endpoints
 
-- **GET /api/products** - Get all products
-- **GET /api/products/:id** - Get a specific product
-- **GET /api/categories** - Get all categories
-- **GET /api/categories/tree** - Get category hierarchy
-- **GET /api/categories/:id** - Get a specific category
-- **GET /api/settings** - Get public settings
+- **GET /api/superadmin/products** - Get all products
+- **GET /api/superadmin/products/:id** - Get a specific product
+- **GET /api/superadmin/categories** - Get all categories
+- **GET /api/superadmin/categories/tree** - Get category hierarchy
+- **GET /api/superadmin/categories/:id** - Get a specific category
+- **GET /api/superadmin/settings** - Get all settings
+- **GET /api/superadmin/settings/:key** - Get a specific setting
+- **GET /api/superadmin/settings/footer** - Get footer settings
 
-### Customer Endpoints
+### Authentication Endpoints
 
 - **POST /api/auth/register** - Register a new account
 - **POST /api/auth/login** - Login
 - **GET /api/auth/profile** - Get profile
-- **POST /api/orders** - Create a new order
-- **GET /api/orders** - Get customer's orders
-- **POST /api/inquiries** - Submit an inquiry
-- **POST /api/reviews** - Submit a review
+- **PUT /api/auth/profile** - Update profile
 
 ### Product Manager Endpoints
 
@@ -57,10 +56,15 @@ Access to different parts of the system is controlled by the user's role:
 - **POST /api/manager/products** - Create a new product
 - **PUT /api/manager/products/:id** - Update a product
 - **DELETE /api/manager/products/:id** - Delete a product
+- **POST /api/manager/products/:id/restore** - Restore a deleted product
+- **PUT /api/manager/products/:id/images** - Update product images
 - **GET /api/manager/categories** - Get all categories
+- **GET /api/manager/categories/tree** - Get category hierarchy
+- **GET /api/manager/categories/:id** - Get a specific category
 - **POST /api/manager/categories** - Create a new category
 - **PUT /api/manager/categories/:id** - Update a category
 - **DELETE /api/manager/categories/:id** - Delete a category
+- **PUT /api/manager/categories/:id/filters** - Update category filters
 - **GET /api/manager/reviews** - Get all reviews
 - **PUT /api/manager/reviews/:id** - Update review approval status
 
@@ -88,12 +92,30 @@ Access to different parts of the system is controlled by the user's role:
 - **POST /api/superadmin/admins** - Create a new admin
 - **PUT /api/superadmin/admins/:id** - Update an admin
 - **DELETE /api/superadmin/admins/:id** - Delete an admin
+- **GET /api/superadmin/products** - Get all products
+- **POST /api/superadmin/products** - Create a new product
+- **PUT /api/superadmin/products/:id** - Update a product
+- **DELETE /api/superadmin/products/:id** - Delete a product
+- **POST /api/superadmin/products/:id/restore** - Restore a deleted product
+- **PUT /api/superadmin/products/:id/images** - Update product images
+- **GET /api/superadmin/categories** - Get all categories
+- **GET /api/superadmin/categories/tree** - Get category hierarchy
+- **GET /api/superadmin/categories/:id** - Get a specific category
+- **POST /api/superadmin/categories** - Create a new category
+- **PUT /api/superadmin/categories/:id** - Update a category
+- **DELETE /api/superadmin/categories/:id** - Delete a category
+- **PUT /api/superadmin/categories/:id/filters** - Update category filters
 - **GET /api/superadmin/orders** - Get all orders
 - **PUT /api/superadmin/orders/:id/status** - Update order status
 - **GET /api/superadmin/inquiries** - Get all inquiries
 - **PUT /api/superadmin/inquiries/:id** - Update inquiry status
 - **GET /api/superadmin/settings** - Get all settings
+- **GET /api/superadmin/settings/:key** - Get a specific setting
+- **GET /api/superadmin/settings/footer** - Get footer settings
+- **POST /api/superadmin/settings** - Create a new setting
 - **PUT /api/superadmin/settings/:key** - Update a setting
+- **DELETE /api/superadmin/settings/:key** - Delete a setting
+- **POST /api/superadmin/settings/bulk-update** - Bulk update settings
 - **GET /api/superadmin/analytics/dashboard** - Get dashboard statistics
 - **GET /api/superadmin/analytics/sales** - Get sales analytics
 - **GET /api/superadmin/analytics/products** - Get product analytics

@@ -63,7 +63,7 @@ module.exports = {
       {
         name: 'Admin User',
         email: 'admin@example.com',
-        password: '$2a$10$JvHX33r4DpbwPQQO8K5zAOGGuL1vUQw869bO6bPww2Y.d.rbI.Kga', // 'password123'
+        password: '$2b$10$ihI6GZhpymw1jlQXTtPXbOztVsffjuY1ym4zy8IiGukuHizBdwRJa', // 'password123'
         roleId: 1, // Super Admin
         isActive: true,
         phone: '123-456-7890',
@@ -74,7 +74,7 @@ module.exports = {
       {
         name: 'Product Manager',
         email: 'product@example.com',
-        password: '$2a$10$JvHX33r4DpbwPQQO8K5zAOGGuL1vUQw869bO6bPww2Y.d.rbI.Kga', // 'password123'
+        password: '$2b$10$ihI6GZhpymw1jlQXTtPXbOztVsffjuY1ym4zy8IiGukuHizBdwRJa', // 'password123'
         roleId: 2, // Product Manager
         isActive: true,
         phone: '123-456-7891',
@@ -85,7 +85,7 @@ module.exports = {
       {
         name: 'Sales Admin',
         email: 'sales@example.com',
-        password: '$2a$10$JvHX33r4DpbwPQQO8K5zAOGGuL1vUQw869bO6bPww2Y.d.rbI.Kga', // 'password123'
+        password: '$2b$10$ihI6GZhpymw1jlQXTtPXbOztVsffjuY1ym4zy8IiGukuHizBdwRJa', // 'password123'
         roleId: 3, // Sales Admin
         isActive: true,
         phone: '123-456-7892',
@@ -96,7 +96,7 @@ module.exports = {
       {
         name: 'Regular User',
         email: 'user@example.com',
-        password: '$2a$10$JvHX33r4DpbwPQQO8K5zAOGGuL1vUQw869bO6bPww2Y.d.rbI.Kga', // 'password123'
+        password: '$2b$10$ihI6GZhpymw1jlQXTtPXbOztVsffjuY1ym4zy8IiGukuHizBdwRJa', // 'password123'
         roleId: null, // Regular user
         isActive: true,
         phone: '123-456-7893',

@@ -101,6 +101,14 @@ module.exports = (sequelize, DataTypes) => {
     quoteExpiryDate: {
       type: DataTypes.DATE,
       allowNull: true
+    },
+    transactionRef: {
+      type: DataTypes.STRING,
+      allowNull: true
+    },
+    paymentId: {
+      type: DataTypes.STRING,
+      allowNull: true
     }
   }, {
     sequelize,

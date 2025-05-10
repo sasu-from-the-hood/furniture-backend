@@ -2,9 +2,9 @@ import { useState, useContext } from "react";
 import { toast } from "react-toastify";
 import { ShopContext } from "../context/ShopContext";
 import axiosInstance from "../../hooks/axiosInstance";
-function ReviewForm({ productId }) {
-  const [name, setName] = useState("");
-  const [email, setEmail] = useState("");
+import PropTypes from 'prop-types';
+
+function ReviewForm({ productId, onReviewSubmitted }) {
   const [review, setReview] = useState("");
   const [rating, setRating] = useState(1);
   const [loading, setLoading] = useState(false);
@@ -19,47 +19,37 @@ function ReviewForm({ productId }) {
       return;
     }
 
-    const reviewData = {
-      // userName: name,
-      // email,
-      furnitureId: productId,
-      rating: rating,
-      content: review,
-
-
-    };
+    if (!review.trim()) {
+      toast.error("Please enter a review comment");
+      return;
+    }
 
     try {
       setLoading(true);
-      // const response = await fetch(
-      //   `https://furnitureapi-ykrq.onrender.com/api/furniture/${productId}/reviews`,
-      //   {
-      //     method: "POST",
-      //     headers: {
-      //       "Content-Type": "application/json",
-      //       Authorization: `Bearer ${token}`,
-      //     },
-      //     body: JSON.stringify(reviewData),
-      //   }
-      // );
 
-      const response = await axiosInstance.post("/review", {
-        furnitureId: productId,
+      // Use the new API endpoint for reviews
+      const response = await axiosInstance.post(`/reviews/products/${productId}/reviews`, {
         rating: rating,
-        content: review,
+        content: review
       });
 
       console.log("Review Response:", response);
 
-      if (response.status != 201) throw new Error("Failed to submit review");
+      if (response.status === 201) {
+        toast.success("Review submitted successfully!");
+        setReview("");
+        setRating(1);
 
-      toast.success("Review submitted successfully!");
-      setName("");
-      setEmail("");
-      setReview("");
-      setRating(0);
+        // Call the callback function if provided
+        if (typeof onReviewSubmitted === 'function') {
+          onReviewSubmitted();
+        }
+      } else {
+        throw new Error("Failed to submit review");
+      }
     } catch (error) {
-      toast.error("Error submitting review.");
+      console.error("Error submitting review:", error);
+      toast.error(error.response?.data?.message || "Error submitting review.");
     } finally {
       setLoading(false);
     }
@@ -73,21 +63,22 @@ function ReviewForm({ productId }) {
 
   return (
     <form onSubmit={handleSubmit} className="space-y-4">
-      <input
-        className="w-full p-2 border rounded"
+      {/* <input
+        className="w-full p-2 border rounded bg-gray-100"
         type="text"
         placeholder="Your Name"
-        value={username}
-        onChange={(e) => setName(e.target.value)}
+        value={username || ""}
+        disabled
+        readOnly
       />
       <input
-        className="w-full p-2 border rounded"
+        className="w-full p-2 border rounded bg-gray-100"
         type="email"
         placeholder="Your Email"
-        value={userEmail}
-        onChange={(e) => setEmail(e.target.value)}
-
-      />
+        value={userEmail || ""}
+        disabled
+        readOnly
+      /> */}
       <textarea
         className="w-full p-2 border rounded"
         rows="4"
@@ -122,5 +113,10 @@ function ReviewForm({ productId }) {
     </form>
   );
 }
+
+ReviewForm.propTypes = {
+  productId: PropTypes.string.isRequired,
+  onReviewSubmitted: PropTypes.func
+};
 
 export default ReviewForm;

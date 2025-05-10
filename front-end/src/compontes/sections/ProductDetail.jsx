@@ -1,5 +1,5 @@
 import { useParams, Link } from "react-router-dom";
-import { useState, useContext, useEffect } from "react";
+import { useState, useContext, useEffect, useCallback } from "react";
 import { ShopContext } from "../context/ShopContext";
 import ReviewCard from "../ui/ReviewCard";
 import ReviewForm from "../ui/ReviewForm";
@@ -7,30 +7,53 @@ import RelatedProduct from "../ui/RelatedProducts";
 import { toast } from "react-toastify";
 import axiosInstance from "../../hooks/axiosInstance";
 import { ClipLoader } from "react-spinners";
+import { IMAGE_URL } from "../../config/index";
 
 function ProductDetail() {
   const productId = useParams().productId;
   const [quantity, setQuantity] = useState(1);
   const [image, setImage] = useState("");
   const [reviews, setReviews] = useState([]);
+  const [reviewStats, setReviewStats] = useState({ averageRating: 0, totalReviews: 0 });
   const [CategoryName, setCategoryName] = useState();
-  // const fetchreviews = async (productId) => {
-  //   try {
-  //     const response = await axiosInstance.get(`/furniture/${productId}`);
-  //     if (!response.ok) throw new Error("Failed to fetch reviews");
-  //     const data = await response.json();
-  //     setReviews(data);
-  //   } catch (error) {
-  //     console.log(error)
-  //     toast.error("Error fetching reviews!");
-  //   }
-  // };
 
-  // useEffect(() => {
-  //   fetchreviews(productId);
-  // }, [productId]);
+  // Fetch reviews for this product
+  const fetchReviews = useCallback(async () => {
+    try {
+      console.log("Fetching reviews for product ID:", productId);
+      const response = await axiosInstance.get(`/reviews/products/${productId}/reviews`);
+      console.log("Reviews response:", response.data);
 
-  const { getCart, getProductById, loading, error, BASE_URL, categories } = useContext(ShopContext);
+      if (response.data) {
+        // Process reviews to include user information
+        const processedReviews = (response.data.reviews || []).map(review => {
+          return {
+            id: review.id,
+            rating: review.rating,
+            content: review.comment || review.content,
+            createdAt: review.createdAt,
+            // Include user information if available
+            reviewBy: review.user ? review.user.name : "Anonymous",
+            userEmail: review.user ? review.user.email : ""
+          };
+        });
+
+        console.log("Processed reviews:", processedReviews);
+        setReviews(processedReviews);
+        setReviewStats(response.data.stats || { averageRating: 0, totalReviews: 0 });
+        console.log("Review stats set:", response.data.stats);
+      }
+    } catch (error) {
+      console.error("Error fetching reviews:", error);
+      toast.error("Error fetching reviews!");
+    }
+  }, [productId]);
+
+  useEffect(() => {
+    fetchReviews();
+  }, [fetchReviews]);
+
+  const { getCart, getProductById, loading, error, categories } = useContext(ShopContext);
   const [productData, setProduct] = useState(null);
 
 
@@ -39,7 +62,8 @@ function ProductDetail() {
       console.log("Product ID:", productId);
       console.log("Quantity:", quantity);
 
-      const response = await axiosInstance.post("/cart", {
+      // Use the correct endpoint for adding items to cart
+      const response = await axiosInstance.post("/user/cart", {
         furnitureId: Number(productId),
         quantity,
       });
@@ -49,7 +73,14 @@ function ProductDetail() {
       toast.success("Item added to cart successfully!");
     } catch (error) {
       console.error("Error adding item to cart:", error);
-      toast.error("Failed to add item to cart. Please try again.");
+
+      // More detailed error message
+      if (error.response) {
+        console.log("Error response:", error.response.data);
+        toast.error(error.response.data.message || "Failed to add item to cart. Please try again.");
+      } else {
+        toast.error("Failed to add item to cart. Please try again.");
+      }
     }
   };
 
@@ -58,8 +89,34 @@ function ProductDetail() {
     const fetchProduct = async () => {
       try {
         const data = await getProductById(productId);
-        setProduct(data);
-        setImage(data.images[0]?.url);
+        console.log("Product data received:", data);
+
+        // Check if data contains a nested product object (API response structure)
+        const productData = data?.product || data;
+
+        if (!productData) {
+          console.error("No product data found in the response");
+          return;
+        }
+
+        setProduct(productData);
+
+        // Safely access the first image URL if available
+        if (productData.images && productData.images.length > 0) {
+          const firstImage = productData.images[0];
+          // Check if the image has imageUrl (from backend) or url (from frontend)
+          if (firstImage.imageUrl) {
+            setImage(`${IMAGE_URL}${firstImage.imageUrl}`);
+          } else if (firstImage.url) {
+            setImage(firstImage.url);
+          } else {
+            console.log("Image found but no valid URL");
+            setImage("/default-image.jpg");
+          }
+        } else {
+          console.log("No images found for product");
+          setImage("/default-image.jpg"); // Set a default image
+        }
       } catch (error) {
         console.error("Error fetching product:", error);
       }
@@ -68,35 +125,40 @@ function ProductDetail() {
     fetchProduct();
   }, [productId, getProductById]);
 
-  const getCategoryName = () => {
-    categories.forEach((category) => {
-      if (category.id === productData.categoryId) {
-        setCategoryName(category.name);
-        console.log("invoked", CategoryName)
+  const getCategoryName = useCallback(() => {
+    if (!categories || !Array.isArray(categories) || !productData) {
+      return;
+    }
+
+    // First try to find a direct match
+    const foundCategory = categories.find(category => category.id === productData.categoryId);
+    if (foundCategory) {
+      setCategoryName(foundCategory.name);
+      console.log("Category found:", foundCategory.name);
+      return;
+    }
+
+    // If not found, search in subcategories
+    categories.forEach(category => {
+      if (category.subcategories && Array.isArray(category.subcategories)) {
+        const subCategory = category.subcategories.find(
+          subCat => subCat.id === productData.categoryId
+        );
+        if (subCategory) {
+          setCategoryName(subCategory.name);
+          console.log("Subcategory found:", subCategory.name);
+        }
       }
     });
-  };
+  }, [categories, productData]);
 
   useEffect(() => {
     if (productData) {
       getCategoryName();
     }
-  }, [productData, categories]);
-
-
-
-  // If the review Is returned with the product this should be enough right?
+  }, [productData, categories, getCategoryName]);
 
   const [activeTab, setActiveTab] = useState("description");
-  useEffect(() => {
-    if (productData) {
-      setReviews(productData.reviews || []);
-
-      console.log(productData.reviews)
-    }
-  }, [productData]);
-
-  // if (loading) return <p>Loading...</p>;
   if (loading)
     return (
       <div className="flex justify-center items-center h-screen">
@@ -109,7 +171,7 @@ function ProductDetail() {
     description: (
       <div className="">
         <p className="text-gray-700">
-          {productData.description}
+          {productData.longDesc}
           <br />A sleek, minimalist chair designed for contemporary spaces,
           combining clean lines with ergonomic comfort. Crafted with a durable
           metal frame and a soft, cushioned seat, it’s perfect for a modern home
@@ -127,6 +189,7 @@ function ProductDetail() {
                 <ReviewCard
                   key={review.id}
                   userName={review.reviewBy}
+                  userEmail={review.userEmail}
                   date={new Date(review.createdAt).toLocaleDateString()}
                   rating={review.rating}
                   reviewText={review.content}
@@ -136,35 +199,11 @@ function ProductDetail() {
               <p>No reviews yet.</p>
             )}
           </div>
-          {/* <form className="space-y-4">
-          <input
-          
-            className="w-full p-2 border rounded"
-            type="text"
-            placeholder="Your Name"
-            required
-          />
-          <input
-            className="w-full p-2 border rounded"
-            type="email"
-            placeholder="Your Email"
-            required
-          />
-          <textarea
-            className="w-full p-2 border rounded"
-            rows="4"
-            placeholder="Your Review"
-            required
-          ></textarea>
-          <button
-            className="px-4 py-2 bg-green-950 text-white rounded"
-            type="submit"
-          >
-            Submit Review
-          </button>
-        </form> */}
           <h3>Leave a Review</h3>
-          <ReviewForm productId={productId} />
+          <ReviewForm
+            productId={productId}
+            onReviewSubmitted={fetchReviews}
+          />
         </div>
       </>
     ),
@@ -179,14 +218,30 @@ function ProductDetail() {
           <div className="flex gap-12 sm:gap-12 flex-col sm:flex-row">
             <div className="flex-1 flex flex-col-reverse gap-3 sm:flex-row">
               <div className="flex sm:flex-col overflow-x-auto sm:overflow-y-scroll justify-between sm:justify-normal sm:w-[18.7%] w-full">
-                {productData.images.map((item, index) => (
+                {productData.images && productData.images.length > 0 ? (
+                  productData.images.map((item, index) => {
+                    // Determine the correct image URL
+                    const imageUrl = item.imageUrl
+                      ? `${IMAGE_URL}${item.imageUrl}`
+                      : (item.url || "/default-image.jpg");
+
+                    return (
+                      <img
+                        onClick={() => setImage(imageUrl)}
+                        src={imageUrl}
+                        key={index}
+                        className="w-[24%] sm:w-full sm:mb-3 flex-shrink-0 cursor-pointer"
+                        alt={`Product view ${index + 1}`}
+                      />
+                    );
+                  })
+                ) : (
                   <img
-                    onClick={() => setImage(item.url)}
-                    src={item.url}
-                    key={index}
-                    className="w-[24%] sm:w-full sm:mb-3 flex-shrink-0 cursor-pointer"
+                    src="/default-image.jpg"
+                    className="w-[24%] sm:w-full sm:mb-3 flex-shrink-0"
+                    alt="Default product image"
                   />
-                ))}
+                )}
               </div>
               <div className="w-full sm:w-[80%]">
                 <img className="w-full h-auto" src={image} alt="" />
@@ -194,16 +249,6 @@ function ProductDetail() {
             </div>
           </div>
         </div>
-
-        {/* <div className="bg-orange-200 rounded-xl h-auto md:h-fit">
-                <img className="rounded-xl" src="./src/images/servicePic.jpg" alt="Main product image"/>
-                <div className="p-4 gap-4 grid grid-cols-3">
-                    alternate images
-                    <div className="h-fit"><img src="./src/images/lamp.avif" alt="Alternate image"/></div>
-                    <div className="h-fit"><img src="./src/images/lamp.avif" alt="Alternate image"/></div>
-                    <div className="h-fit"><img src="./src/images/lamp.avif" alt="Alternate image"/></div>
-                </div>
-            </div> */}
 
         {/* Product price and description */}
         <div className="flex flex-col justify-start h-auto">
@@ -213,15 +258,19 @@ function ProductDetail() {
           {/* Dynamic product review here */}
           <div className="flex items-center text-gray-600 gap-4 lg:ml-12 sm:ml-0 py-4">
             {/* average rating */}
-            <h1 className="text-2xl bg-gray-300 rounded-xl p-2">4.5</h1>
+            <h1 className="text-2xl bg-gray-300 rounded-xl p-2">{reviewStats.averageRating || "0.0"}</h1>
             {/* dynamic review stars */}
             <div>
               <div className="text-xl text-yellow-500">
-                &#9733;&#9733;&#9733;&#9733;&#9733;
+                {[...Array(5)].map((_, index) => (
+                  <span key={index}>
+                    {index < Math.round(reviewStats.averageRating) ? "★" : "☆"}
+                  </span>
+                ))}
               </div>
             </div>
             {/* Total number of reviews */}
-            <p className="tracking-widest text-lg">(290,291)</p>
+            <p className="tracking-widest text-lg">({reviewStats.totalReviews || 0})</p>
           </div>
 
           <h1 className="text-2xl text-gray-600 lg:ml-12 sm:ml-0">
@@ -304,7 +353,7 @@ function ProductDetail() {
         <div className="tab-content mt-4 w-72 min-[600px]:w-full min-[500px]:ml-0 ml-[-4rem] min-[]">
           {tabContent[activeTab]}
         </div>
-        <RelatedProduct subCategoryId={productData.subCategoryId} />
+        {productData.categoryId && <RelatedProduct subCategoryId={productData.categoryId} />}
       </section>
     </>
   );

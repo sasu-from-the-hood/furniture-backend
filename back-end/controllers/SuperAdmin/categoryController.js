@@ -72,10 +72,9 @@ exports.getCategoryById = async (req, res) => {
       where: { categoryId: id }
     });
     
-    res.json({ 
-      category,
-      productCount
-    });
+    res.json(
+      category
+    );
   } catch (error) {
     res.status(500).json({ message: 'Server error', error: error.message });
   }

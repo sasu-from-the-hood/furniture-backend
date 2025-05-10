@@ -7,6 +7,8 @@ const {
   validateUpdateProduct,
   validateProductImages
 } = require('../../middleware/productValidation');
+const processImages = require('../../middleware/processImages');
+const handleFileUpload = require('../../middleware/uploadMiddleware');
 
 // All routes require authentication and Product Manager role
 router.use(authenticate, hasRole('Product Manager'));
@@ -14,9 +16,9 @@ router.use(authenticate, hasRole('Product Manager'));
 // Product routes
 router.get('/', productController.getAllProducts);
 router.get('/:id', productController.getProductById);
-router.post('/', validateCreateProduct, productController.createProduct);
-router.put('/:id', validateUpdateProduct, productController.updateProduct);
+router.post('/', handleFileUpload, validateCreateProduct, processImages, productController.createProduct);
+router.put('/:id', handleFileUpload, validateUpdateProduct, processImages, productController.updateProduct);
 router.delete('/:id', productController.deleteProduct);
-router.put('/:id/images', validateProductImages, productController.updateProductImages);
+router.put('/:id/images', handleFileUpload, validateProductImages, processImages, productController.updateProductImages);
 
 module.exports = router;

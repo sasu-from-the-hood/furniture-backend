@@ -9,13 +9,13 @@ function Cart() {
   const { cart, setCart, getCart, loading, error, token } = useContext(ShopContext);
   const [product, setProduct] = useState([]);
 
-  // const BASE_URL = "http://localhost:3000/api/cart";
-  const BASE_URL = 'https://furniture-backend.duckdns.org/api/cart';
+  // Use the same API_URL from config for consistency
+  const BASE_URL = 'http://localhost:3002/api/user/cart';
 
   useEffect(() => {
     getCart();
   }, []);
-  
+
 
   // const fetchCart = async () => {
   //   try {
@@ -102,22 +102,13 @@ function Cart() {
           Your <span className="text-green-950 font-bold">Cart</span>
         </h1>
         {cart.map((item) =>
-          <div className="m-4 flex flex-wrap items-center p-4 space-x-4 border-solid border-t-2 border-gray-300">
-
-            {/* Product Image */}
-            <div className="w-[200px]">
-              <img
-                src={item.furniture.images[0].url}
-                alt={item.furniture.name}
-                className="w-full h-auto"
-              />
-            </div>
+          <div key={item.id} className="m-4 flex flex-wrap items-center p-4 space-x-4 border-solid border-t-2 border-gray-300">
 
             {/* Product Details */}
             <div className="flex-1 space-y-2 min-w-[200px]">
-              <h1 className="text-2xl">{item.furniture.name}</h1>
-              <p>{item.furniture.description}</p>
-              <p className="text-2xl text-green-950">{item.furniture.price} ETB</p>
+              <h1 className="text-2xl">{item.furniture.title || 'Product'}</h1>
+              <p>{item.furniture.shortDesc || item.furniture.description || 'No description available'}</p>
+              <p className="text-2xl text-green-950">{item.furniture.price || 0} ETB</p>
             </div>
 
             {/* Quantity */}

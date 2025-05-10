@@ -35,6 +35,9 @@ pnpm-lock.yaml
 
 # Coverage
 coverage/
-
+uploads/*
+uploads
 # Misc
 *.local
+
+.env

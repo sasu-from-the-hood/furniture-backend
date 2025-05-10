@@ -72,7 +72,7 @@ exports.hasPermission = (resource, action) => {
       return res.status(403).json({ message: 'Admin access required' });
     }
 
-    const permissions = req.user.role.permissions;
+    const permissions = JSON.parse(req.user.role.permissions);
 
     if (!permissions[resource] || !permissions[resource].includes(action)) {
       return res.status(403).json({ message: 'Insufficient permissions' });
