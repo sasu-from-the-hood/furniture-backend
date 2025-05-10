@@ -5,6 +5,7 @@ import shophero from "../../assets/shophero.jpg";
 import { useContext, useEffect, useState } from "react";
 import { ShopContext } from "../context/ShopContext";
 import ProductCategories from "./ProductCategories";
+import { IMAGE_URL } from "../../config/index";
 
 function Shop() {
     const ITEMS_PER_PAGE = 8;
@@ -20,56 +21,64 @@ function Shop() {
         getCategories,
         categoryProducts,
         selectedCategory,
-        setSelectedCategory,
-        getProductsByCategory,
+        handleCategoryChange,
         search,
         showSearch,
     } = useContext(ShopContext);
-    // const [selectedCategory, setSelectedCategory] = useState(0);
+    // We're using selectedCategory and setSelectedCategory from ShopContext
 
     useEffect(() => {
         getCategories();
     }, [getCategories]);
 
+    // When selectedCategory changes, reset to page 1
     useEffect(() => {
-        if (selectedCategory === 0) {
-            setShowProducts(products);
-            setCurrentPage(1);
-        } else {
-            
-            getProductsByCategory(selectedCategory);
-            setCurrentPage(1);
-        }
-    }, [products, selectedCategory, getProductsByCategory]);
+        setCurrentPage(1);
+    }, [selectedCategory]);
 
-    const searchFilter = (items) => {
-        if (showSearch && search) {
-            return items.filter((item) =>
-                item.name.toLowerCase().includes(search.toLowerCase())
-            );
-        }
-        return items;
-    };
+
 
     useEffect(() => {
-        // Get active products based on the selected category
-        let activeProducts =
-            selectedCategory === 0
-                ? products
-                : categoryProducts.furniture || [];
+        try {
+            // Get active products based on the selected category
+            let activeProducts = [];
 
-        // Apply search filter if the search bar is active and a search term exists
-        if (showSearch && search) {
-            activeProducts = activeProducts.filter((item) =>
-                item.name.toLowerCase().includes(search.toLowerCase())
-            );
+            if (selectedCategory === 0) {
+                // All products
+                activeProducts = Array.isArray(products) ? products : [];
+            } else {
+                // Category products
+                if (categoryProducts && categoryProducts.furniture) {
+                    activeProducts = Array.isArray(categoryProducts.furniture) ? categoryProducts.furniture : [];
+                } else {
+                    activeProducts = [];
+                }
+            }
+
+            // Apply search filter if the search bar is active and a search term exists
+            if (showSearch && search) {
+                activeProducts = activeProducts.filter((item) => {
+                    if (!item || typeof item !== 'object') return false;
+
+                    const matchesName = item.name && item.name.toLowerCase().includes(search.toLowerCase());
+                    const matchesTitle = item.title && item.title.toLowerCase().includes(search.toLowerCase());
+                    const matchesDesc = item.description && item.description.toLowerCase().includes(search.toLowerCase());
+                    const matchesShortDesc = item.shortDesc && item.shortDesc.toLowerCase().includes(search.toLowerCase());
+                    const matchesLongDesc = item.longDesc && item.longDesc.toLowerCase().includes(search.toLowerCase());
+
+                    return matchesName || matchesTitle || matchesDesc || matchesShortDesc || matchesLongDesc;
+                });
+            }
+
+            // Pagination: calculate start index and slice the filtered results
+            const startIdx = (currentPage - 1) * ITEMS_PER_PAGE;
+            const paginatedProducts = activeProducts.slice(startIdx, startIdx + ITEMS_PER_PAGE);
+
+            setShowProducts(paginatedProducts);
+        } catch (error) {
+            console.error("Error updating products:", error);
+            setShowProducts([]);
         }
-
-        // Pagination: calculate start index and slice the filtered results
-        const startIdx = (currentPage - 1) * ITEMS_PER_PAGE;
-        const paginatedProducts = activeProducts.slice(startIdx, startIdx + ITEMS_PER_PAGE);
-
-        setShowProducts(paginatedProducts);
     }, [
         products,
         categoryProducts,
@@ -81,24 +90,53 @@ function Shop() {
 
 
     const handleCategorySelect = (category) => {
-        setSelectedCategory(category);
+        handleCategoryChange(category);
     };
 
-    // const totalPages =
-    //   selectedCategory === 0
-    //     ? Math.ceil(products.length / ITEMS_PER_PAGE)
-    //     : categoryProducts.furniture
-    //     ? Math.max(
-    //         1,
-    //         Math.ceil(categoryProducts.furniture.length / ITEMS_PER_PAGE)
-    //       )
-    //     : 1;
 
-    const totalPages = Math.ceil(
-        (selectedCategory === 0
-            ? searchFilter(products).length
-            : searchFilter(categoryProducts.furniture || []).length) / ITEMS_PER_PAGE
-    );
+
+    // Calculate total pages safely
+    const calculateTotalPages = () => {
+        try {
+            let filteredProducts = [];
+
+            if (selectedCategory === 0) {
+                // All products
+                filteredProducts = Array.isArray(products) ? products : [];
+            } else {
+                // Category products
+                if (categoryProducts && categoryProducts.furniture) {
+                    const categoryProductsArray = categoryProducts.furniture;
+                    filteredProducts = Array.isArray(categoryProductsArray) ? categoryProductsArray : [];
+                } else {
+                    filteredProducts = [];
+                }
+            }
+
+            // Apply search filter if needed
+            if (showSearch && search) {
+                filteredProducts = filteredProducts.filter((item) => {
+                    if (!item || typeof item !== 'object') return false;
+
+                    return (
+                        (item.name && item.name.toLowerCase().includes(search.toLowerCase())) ||
+                        (item.title && item.title.toLowerCase().includes(search.toLowerCase())) ||
+                        (item.description && item.description.toLowerCase().includes(search.toLowerCase())) ||
+                        (item.shortDesc && item.shortDesc.toLowerCase().includes(search.toLowerCase())) ||
+                        (item.longDesc && item.longDesc.toLowerCase().includes(search.toLowerCase()))
+                    );
+                });
+            }
+
+            // Ensure we have a valid positive integer
+            return Math.max(1, Math.ceil(filteredProducts.length / ITEMS_PER_PAGE));
+        } catch (error) {
+            console.error("Error calculating total pages:", error);
+            return 1; // Default to 1 page on error
+        }
+    };
+
+    const totalPages = calculateTotalPages();
 
     // Event handler for page change
     const handlePageChange = (page) => {
@@ -145,61 +183,82 @@ function Shop() {
                                 <ShopItemSkeleton key={index} />
                             ))}
                         </div>
-                    ) : (
+                    ) : showProducts && showProducts.length > 0 ? (
                         <div className="flex-1 grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-6">
                             {showProducts.map((product) => (
                                 <Link key={product.id} to={`/product/${product.id}`}>
                                     <ShopItemCard
-                                        image={product.images[0]?.url || "/default-image.jpg"}
-                                        name={product.name}
+                                        image={
+                                            (product.images && product.images.length > 0)
+                                                ? (product.images[0].imageUrl
+                                                    ? `${IMAGE_URL}${product.images[0].imageUrl}`
+                                                    : product.images[0].url)
+                                                : "/default-image.jpg"
+                                        }
+                                        name={product.name || product.title}
                                         price={product.price}
                                     />
                                 </Link>
                             ))}
                         </div>
+                    ) : (
+                        <div className="flex-1 flex justify-center items-center min-h-[300px]">
+                            <p className="text-gray-500 text-lg">No products found. Try a different category or search term.</p>
+                        </div>
                     )}
                 </div>
 
                 {/* Pagination Buttons */}
-                <div className="flex justify-center gap-2 p-2">
-                    {/* Previous button */}
-                    <button
-                        className={`w-20 h-10 ${currentPage === 1
-                                ? "text-gray-400 cursor-not-allowed"
-                                : "hover:border-black"
-                            }`}
-                        onClick={() => handlePageChange(currentPage - 1)}
-                        disabled={currentPage === 1}
-                    >
-                        Previous
-                    </button>
-
-                    {/* Page number buttons */}
-                    {[...Array(totalPages)].map((_, index) => (
+                {!loading && showProducts && showProducts.length > 0 && (
+                    <div className="flex justify-center gap-2 p-2">
+                        {/* Previous button */}
                         <button
-                            key={index + 1}
-                            className={`w-10 h-10 border-solid ${currentPage === index + 1
-                                    ? "border-black font-bold"
-                                    : "border-gray-500 text-gray-500 hover:text-black hover:border-black"
+                            className={`w-20 h-10 ${currentPage === 1
+                                    ? "text-gray-400 cursor-not-allowed"
+                                    : "hover:border-black"
                                 }`}
-                            onClick={() => handlePageChange(index + 1)}
+                            onClick={() => handlePageChange(currentPage - 1)}
+                            disabled={currentPage === 1}
                         >
-                            {index + 1}
+                            Previous
                         </button>
-                    ))}
 
-                    {/* Next button */}
-                    <button
-                        className={`w-20 h-10 ${currentPage === totalPages
-                                ? "text-gray-400 cursor-not-allowed"
-                                : "hover:border-black"
-                            }`}
-                        onClick={() => handlePageChange(currentPage + 1)}
-                        disabled={currentPage === totalPages}
-                    >
-                        Next
-                    </button>
-                </div>
+                        {/* Page number buttons - using a safer approach with a for loop */}
+                        {(() => {
+                            const buttons = [];
+                            const safeTotal = Math.max(1, Math.min(100, totalPages)); // Limit to reasonable range
+
+                            for (let i = 0; i < safeTotal; i++) {
+                                buttons.push(
+                                    <button
+                                        key={i + 1}
+                                        className={`w-10 h-10 border-solid ${currentPage === i + 1
+                                                ? "border-black font-bold"
+                                                : "border-gray-500 text-gray-500 hover:text-black hover:border-black"
+                                            }`}
+                                        onClick={() => handlePageChange(i + 1)}
+                                    >
+                                        {i + 1}
+                                    </button>
+                                );
+                            }
+
+                            return buttons;
+                        })()}
+
+                        {/* Next button */}
+                        <button
+                            className={`w-20 h-10 ${currentPage === totalPages
+                                    ? "text-gray-400 cursor-not-allowed"
+                                    : "hover:border-black"
+                                }`}
+                            onClick={() => handlePageChange(currentPage + 1)}
+                            disabled={currentPage === totalPages}
+                        >
+                            Next
+                        </button>
+                    </div>
+                )}
             </section>
         </>
     );

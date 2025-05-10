@@ -1,0 +1,45 @@
+// No imports needed
+
+/**
+ * Middleware to process images from file uploads
+ * This middleware should be used after multer middleware
+ */
+const processImages = async (req, res, next) => {
+  try {
+    // Check if we have a file from multer
+    if (req.file) {
+      // Create a URL for the uploaded file - without duplicate 'uploads' prefix
+      const imageUrl = `/products/${req.file.filename}`;
+
+      // Create images array if it doesn't exist
+      if (!req.body.images) {
+        req.body.images = [];
+      }
+
+      // If images is not an array, make it one
+      if (!Array.isArray(req.body.images)) {
+        req.body.images = [req.body.images];
+      }
+
+      // Add the processed image to the array
+      req.body.images.push({
+        imageUrl,
+        title: req.file.originalname || 'Uploaded image',
+        isPrimary: req.body.images.length === 0 // First image is primary
+      });
+    }
+
+    // If there are no images at this point but we're updating a product,
+    // we'll keep the existing images in the database
+    if (!req.body.images || !req.body.images.length) {
+      req.body.images = [];
+    }
+
+    next();
+  } catch (error) {
+    console.error('Error processing images:', error);
+    return res.status(500).json({ message: 'Error processing images', error: error.message });
+  }
+};
+
+module.exports = processImages;

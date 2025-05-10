@@ -1,22 +1,15 @@
 
+import PropTypes from 'prop-types';
 
-function ReviewCard ({ userName, date, rating, reviewText }){
-    // return (
-    //     <>
-    //         <hr />
-    //         <div className=" w-fit p-4 gap-2">
-    //             <h1 className="font-bold py-1">User</h1>
-    //             <p className="text-gray-500 text-sm">November {new Date().getDate()}, {new Date().getFullYear()}</p>
-    //             <div><div className="text-xl text-amber-400">&#9733;&#9733;&#9733;&#9733;&#9733;</div></div>
-    //             <p className="text-gray-800">"Amazing sound quality and build!"</p>
-    //         </div>   
-    //     </>
-    // )
+function ReviewCard({ userName, userEmail, date, rating, reviewText }) {
     return (
         <>
           <hr />
           <div className="w-fit p-4 gap-2">
-            <h1 className="font-bold py-1">{userName}</h1>
+            <div className="flex flex-col">
+              <h1 className="font-bold py-1">{userName}</h1>
+              {userEmail && <p className="text-gray-500 text-sm italic">{userEmail}</p>}
+            </div>
             <p className="text-gray-500 text-sm">{date}</p>
             <div>
               <div className="text-xl text-amber-400">
@@ -26,7 +19,15 @@ function ReviewCard ({ userName, date, rating, reviewText }){
             <p className="text-gray-800">{reviewText}</p>
           </div>
         </>
-      );
+    );
 }
 
-export default ReviewCard
+ReviewCard.propTypes = {
+    userName: PropTypes.string.isRequired,
+    userEmail: PropTypes.string,
+    date: PropTypes.string.isRequired,
+    rating: PropTypes.number.isRequired,
+    reviewText: PropTypes.string.isRequired
+};
+
+export default ReviewCard;

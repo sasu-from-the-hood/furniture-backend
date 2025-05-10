@@ -7,6 +7,7 @@ exports.getAllProducts = async (req, res) => {
       page = 1,
       limit = 10,
       category,
+      categoryId,
       search,
       minPrice,
       maxPrice,
@@ -20,7 +21,10 @@ exports.getAllProducts = async (req, res) => {
 
     const whereClause = {};
 
-    if (category) {
+    // Support both 'category' and 'categoryId' parameters for backward compatibility
+    if (categoryId) {
+      whereClause.categoryId = categoryId;
+    } else if (category) {
       whereClause.categoryId = category;
     }
 
@@ -131,20 +135,25 @@ exports.createProduct = async (req, res) => {
       shortDesc,
       longDesc,
       price,
-      discountPrice,
-      inStock,
-      stockQuantity,
-      installationAvailable,
-      installationDetails,
+      discountPrice = null,
+      inStock = true,
+      stockQuantity = null,
+      installationAvailable = false,
+      installationDetails = null,
       categoryId,
-      material,
-      color,
-      dimensions,
-      sku,
-      featured,
+      material = null,
+      color = null,
+      dimensions = null,
+      featured = false,
       images
     } = req.body;
 
+    // Generate a unique SKU
+    const timestamp = Date.now();
+    const randomNum = Math.floor(Math.random() * 1000);
+    const sku = `PROD-${timestamp}-${randomNum}`;
+
+    // Check if the generated SKU already exists
     const existingProduct = await Product.findOne({
       where: { sku },
       transaction
@@ -152,7 +161,7 @@ exports.createProduct = async (req, res) => {
 
     if (existingProduct) {
       await transaction.rollback();
-      return res.status(400).json({ message: 'Product with this SKU already exists' });
+      return res.status(400).json({ message: 'Product with this SKU already exists. Please try again.' });
     }
 
     const category = await Category.findByPk(categoryId, { transaction });
@@ -228,17 +237,7 @@ exports.updateProduct = async (req, res) => {
       shortDesc,
       longDesc,
       price,
-      discountPrice,
-      inStock,
-      stockQuantity,
-      installationAvailable,
-      installationDetails,
       categoryId,
-      material,
-      color,
-      dimensions,
-      sku,
-      featured,
       isActive,
       images
     } = req.body;
@@ -250,20 +249,8 @@ exports.updateProduct = async (req, res) => {
       return res.status(404).json({ message: 'Product not found' });
     }
 
-    if (sku && sku !== product.sku) {
-      const existingProduct = await Product.findOne({
-        where: {
-          sku,
-          id: { [Op.ne]: id }
-        },
-        transaction
-      });
-
-      if (existingProduct) {
-        await transaction.rollback();
-        return res.status(400).json({ message: 'Product with this SKU already exists' });
-      }
-    }
+    // We're not allowing SKU updates from the frontend
+    // Use the existing SKU from the product
 
     if (categoryId) {
       const category = await Category.findByPk(categoryId, { transaction });
@@ -278,17 +265,7 @@ exports.updateProduct = async (req, res) => {
       shortDesc: shortDesc || product.shortDesc,
       longDesc: longDesc || product.longDesc,
       price: price || product.price,
-      discountPrice: discountPrice !== undefined ? discountPrice : product.discountPrice,
-      inStock: inStock !== undefined ? inStock : product.inStock,
-      stockQuantity: stockQuantity !== undefined ? stockQuantity : product.stockQuantity,
-      installationAvailable: installationAvailable !== undefined ? installationAvailable : product.installationAvailable,
-      installationDetails: installationDetails !== undefined ? installationDetails : product.installationDetails,
       categoryId: categoryId || product.categoryId,
-      material: material !== undefined ? material : product.material,
-      color: color !== undefined ? color : product.color,
-      dimensions: dimensions || product.dimensions,
-      sku: sku || product.sku,
-      featured: featured !== undefined ? featured : product.featured,
       isActive: isActive !== undefined ? isActive : product.isActive
     }, { transaction });
 
@@ -298,13 +275,26 @@ exports.updateProduct = async (req, res) => {
         transaction
       });
 
-      const productImages = images.map((image, index) => ({
-        productId: product.id,
-        imageUrl: image.imageUrl,
-        altText: image.altText || title || product.title,
-        isPrimary: image.isPrimary || index === 0,
-        displayOrder: image.displayOrder || index
-      }));
+      const productImages = images.map((image, index) => {
+        if (!image.imageUrl || !image.imageUrl.startsWith("/")) {
+          return null;
+        }
+
+        let imageUrl = image.imageUrl;
+
+        // If imageUrl starts with "/products", add "/uploads" prefix
+        if (imageUrl.startsWith("/products")) {
+          imageUrl = "/uploads" + imageUrl;
+        }
+
+        return {
+          productId: product.id,
+          imageUrl: imageUrl,
+          altText: image.altText || title || product.title,
+          isPrimary: index == 1 ? 1 : 0,
+          displayOrder: image.displayOrder || index
+        };
+      }).filter(image => image !== null);
 
       await ProductImage.bulkCreate(productImages, { transaction });
     }
@@ -327,7 +317,8 @@ exports.updateProduct = async (req, res) => {
 
     res.json({
       message: 'Product updated successfully',
-      product: updatedProduct
+      product: updatedProduct,
+      id: updatedProduct.id
     });
   } catch (error) {
     await transaction.rollback();
@@ -436,13 +427,23 @@ exports.updateProductImages = async (req, res) => {
       transaction
     });
 
-    const productImages = images.map((image, index) => ({
-      productId: product.id,
-      imageUrl: image.imageUrl,
-      altText: image.altText || product.title,
-      isPrimary: image.isPrimary || index === 0,
-      displayOrder: image.displayOrder || index
-    }));
+    const productImages = images.map((image, index) => {
+      // Handle different image formats
+      let imageUrl = image.imageUrl;
+
+      // If imageUrl starts with /uploads, remove it to avoid duplication
+      if (imageUrl && imageUrl.startsWith('/uploads')) {
+        imageUrl = imageUrl.replace('/uploads', '');
+      }
+
+      return {
+        productId: product.id,
+        imageUrl: imageUrl,
+        altText: image.altText || product.title,
+        isPrimary: image.isPrimary || index === 0,
+        displayOrder: image.displayOrder || index
+      };
+    });
 
     await ProductImage.bulkCreate(productImages, { transaction });
 
@@ -460,7 +461,8 @@ exports.updateProductImages = async (req, res) => {
 
     res.json({
       message: 'Product images updated successfully',
-      images: updatedProduct.images
+      images: updatedProduct.images,
+      id: product.id
     });
   } catch (error) {
     await transaction.rollback();
