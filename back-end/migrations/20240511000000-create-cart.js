@@ -3,6 +3,15 @@
 /** @type {import('sequelize-cli').Migration} */
 module.exports = {
   async up(queryInterface, Sequelize) {
+    // Check if the Users and Products tables exist
+    try {
+      await queryInterface.describeTable('Users');
+      await queryInterface.describeTable('Products');
+    } catch (error) {
+      console.error('Error: Users or Products table does not exist. Please run the create-tables migration first.');
+      throw new Error('Foreign key tables do not exist');
+    }
+
     await queryInterface.createTable('Carts', {
       id: {
         allowNull: false,
