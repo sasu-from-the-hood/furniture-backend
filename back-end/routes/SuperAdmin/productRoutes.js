@@ -8,7 +8,7 @@ const {
   validateProductImages
 } = require('../../middleware/productValidation');
 const processImages = require('../../middleware/processImages');
-const handleFileUpload = require('../../middleware/uploadMiddleware');
+const { handleMultipleFileUpload } = require('../../middleware/uploadMiddleware');
 
 // Public routes
 router.get('/', productController.getAllProducts);
@@ -20,7 +20,7 @@ router.post(
   authenticate,
   isAdmin,
   hasPermission('products', 'create'),
-  handleFileUpload,
+  handleMultipleFileUpload,
   validateCreateProduct,
   processImages,
   productController.createProduct
@@ -31,7 +31,7 @@ router.put(
   authenticate,
   isAdmin,
   hasPermission('products', 'update'),
-  handleFileUpload,
+  handleMultipleFileUpload,
   validateUpdateProduct,
   processImages,
   productController.updateProduct
@@ -58,7 +58,7 @@ router.put(
   authenticate,
   isAdmin,
   hasPermission('products', 'update'),
-  handleFileUpload,
+  handleMultipleFileUpload,
   validateProductImages,
   processImages,
   productController.updateProductImages

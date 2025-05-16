@@ -83,10 +83,32 @@ export const ProductEdit = (props) => (
         {/* Images */}
         <ImageInput
           source="file"
-          label="Product Images"
-          accept="image/*"
-          placeholder={<p>Drag and drop an image here, or click to select a file</p>}
+          label="Product Images (Up to 5)"
+          accept="image/jpeg,image/png,image/gif,image/webp"
+          multiple={true}
+          maxFiles={5}
+          placeholder={<p>Drag and drop up to 5 images here, or click to select files</p>}
           validate={[required()]}
+          parse={(value) => {
+            // Return the value as is if it's not an array (e.g., when deleting)
+            if (!Array.isArray(value)) return value;
+
+            // For each file, ensure it has the correct structure
+            return value.map(file => {
+              // If it's already a processed file with src, keep it as is
+              if (file.src) return file;
+
+              // If it's a new file with rawFile, add title from originalname
+              if (file.rawFile) {
+                return {
+                  ...file,
+                  title: file.rawFile.name || 'Uploaded image'
+                };
+              }
+
+              return file;
+            });
+          }}
         >
           <ImageField source="src" title="title" />
         </ImageInput>
@@ -121,10 +143,32 @@ export const ProductCreate = (props) => (
         {/* Images */}
         <ImageInput
           source="file"
-          label="Product Images"
-          accept="image/*"
-          placeholder={<p>Drag and drop an image here, or click to select a file</p>}
+          label="Product Images (Up to 5)"
+          accept="image/jpeg,image/png,image/gif,image/webp"
+          multiple={true}
+          maxFiles={5}
+          placeholder={<p>Drag and drop up to 5 images here, or click to select files</p>}
           validate={[required()]}
+          parse={(value) => {
+            // Return the value as is if it's not an array (e.g., when deleting)
+            if (!Array.isArray(value)) return value;
+
+            // For each file, ensure it has the correct structure
+            return value.map(file => {
+              // If it's already a processed file with src, keep it as is
+              if (file.src) return file;
+
+              // If it's a new file with rawFile, add title from originalname
+              if (file.rawFile) {
+                return {
+                  ...file,
+                  title: file.rawFile.name || 'Uploaded image'
+                };
+              }
+
+              return file;
+            });
+          }}
         >
           <ImageField source="src" title="title" />
         </ImageInput>

@@ -7,7 +7,9 @@ import { dataProvider } from './dataProvider/index.jsx';
 import { ProductList, ProductEdit, ProductCreate } from './resources/products.jsx';
 import { CategoryList, CategoryEdit, CategoryCreate } from './resources/categories.jsx';
 import { OrderList } from './resources/orders.jsx';
+import { ManagerOrderList } from './resources/managerOrder.jsx';
 import { UserList, UserEdit, UserCreate } from './resources/users.jsx';
+import { InquiryList } from './resources/inquiries.jsx';
 import HomeRedirect from './resources/home.jsx';
 // Import pages
 import Dashboard from './pages/Dashboard.jsx';
@@ -77,7 +79,11 @@ const AdminApp = () => {
               list={SiteSettingsPage}
               icon={SettingIcon}
             />
-            <Resource name="inquiries" icon={InquiryIcon} />
+            <Resource
+              name="inquiries"
+              list={InquiryList}
+              icon={InquiryIcon}
+            />
             <Resource name="analytics" icon={AnalyticsIcon} />
           </>
         );
@@ -98,13 +104,16 @@ const AdminApp = () => {
               create={ProductCreate}
               icon={ProductIcon}
             />
-            {/* <Resource
-              name="categories"
-              list={CategoryList}
-              edit={CategoryEdit}
-              create={CategoryCreate}
-              icon={CategoryIcon}
-            /> */}
+            <Resource
+              name="orders"
+              list={ManagerOrderList}
+              icon={OrderIcon}
+            />
+            <Resource
+              name="inquiries"
+              list={InquiryList}
+              icon={InquiryIcon}
+            />
             <Resource name="reviews" icon={ReviewIcon} />
           </>
         );

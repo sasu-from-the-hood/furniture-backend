@@ -4,7 +4,7 @@ const orderController = require('../../controllers/Sales/orderController');
 const { authenticate, hasRole } = require('../../middleware/auth');
 
 // All routes require authentication and Sales Admin role
-router.use(authenticate, hasRole('Sales Admin'));
+router.use(authenticate, hasRole('Product Manager'));
 
 // Order routes
 router.get('/', orderController.getAllOrders);

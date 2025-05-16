@@ -23,7 +23,10 @@ const getEndpoint = (resource, role) => {
       products: '/superadmin/products',
       categories: '/manager/categories',
       reviews: '/manager/reviews',
+      orders: '/superadmin/orders',
+      inquiries: '/superadmin/inquiries',
       dashboard: '/superadmin/dashboard',
+      users: '/superadmin/users',
     },
     salesAdmin: {
       orders: '/sales/orders',
@@ -78,6 +81,11 @@ export const dataProvider = (role = 'Super Admin') => ({
         data = json.data;
         total = json.total || 0;
       }
+      // Handle inquiries endpoint specifically
+      else if (resource === 'inquiries' && json.inquiries) {
+        data = json.inquiries;
+        total = json.pagination ? json.pagination.total : (json.total || json.count || json.inquiries.length);
+      }
       // Handle other endpoints
       else {
         data = json[resource] || json.rows || json.data || json;
@@ -98,9 +106,38 @@ export const dataProvider = (role = 'Super Admin') => ({
       headers: new Headers({
         Authorization: `Bearer ${localStorage.getItem('token')}`,
       }),
-    }).then(({ json }) => ({
-      data: json[resource.slice(0, -1)] || json,
-    }));
+    }).then(({ json }) => {
+      // Handle inquiries specifically
+      if (resource === 'inquiries' && json.inquiry) {
+        return { data: json.inquiry };
+      }
+
+      // Handle products with images
+      if (resource === 'products') {
+        const product = json.product || json;
+
+        // Transform images for react-admin ImageInput/ImageField
+        if (product && product.images && Array.isArray(product.images)) {
+          // Create a file array for the ImageInput component
+          const transformedImages = product.images.map(image => ({
+            id: image.id,
+            src: image.imageUrl, // Use imageUrl as src for ImageField
+            title: image.altText || image.title || 'Product Image', // Use altText or title for the title
+            rawFile: null // No rawFile for existing images
+          }));
+
+          // Replace the images array with the transformed one
+          product.file = transformedImages;
+        }
+
+        return { data: product };
+      }
+
+      // Default handling
+      return {
+        data: json[resource.slice(0, -1)] || json,
+      };
+    });
   },
 
   getMany: (resource, params) => {
@@ -123,6 +160,44 @@ export const dataProvider = (role = 'Super Admin') => ({
       }));
     }
 
+    // Special handling for products resource
+    if (resource === 'products') {
+      // Make individual requests for each product
+      const promises = params.ids.map(id =>
+        httpClient(`${apiUrl}${endpoint}/${id}`, {
+          headers: new Headers({
+            Authorization: `Bearer ${localStorage.getItem('token')}`,
+          }),
+        }).then(({ json }) => {
+          // Ensure each item has an id
+          const product = json.product || json;
+          if (product && !product.id) {
+            product.id = id;
+          }
+
+          // Transform images for react-admin ImageInput/ImageField
+          if (product && product.images && Array.isArray(product.images)) {
+            // Create a file array for the ImageInput component
+            const transformedImages = product.images.map(image => ({
+              id: image.id,
+              src: image.imageUrl, // Use imageUrl as src for ImageField
+              title: image.altText || image.title || 'Product Image', // Use altText or title for the title
+              rawFile: null // No rawFile for existing images
+            }));
+
+            // Replace the images array with the transformed one
+            product.file = transformedImages;
+          }
+
+          return product;
+        })
+      );
+
+      return Promise.all(promises).then(results => ({
+        data: results,
+      }));
+    }
+
     // Default behavior for other resources
     const url = `${apiUrl}${endpoint}/${params.ids}`;
 
@@ -130,9 +205,34 @@ export const dataProvider = (role = 'Super Admin') => ({
       headers: new Headers({
         Authorization: `Bearer ${localStorage.getItem('token')}`,
       }),
-    }).then(({ json }) => ({
-      data: json[resource] || json,
-    }));
+    }).then(({ json }) => {
+      // If the response already has a data property that's an array, use it
+      if (json.data && Array.isArray(json.data)) {
+        return { data: json.data };
+      }
+
+      // If the response is an array, use it directly
+      if (Array.isArray(json)) {
+        return { data: json };
+      }
+
+      // If the response has a property matching the resource name that's an array, use it
+      if (json[resource] && Array.isArray(json[resource])) {
+        return { data: json[resource] };
+      }
+
+      // Last resort: wrap the response in an array if it's not already one
+      const result = Array.isArray(json) ? json : [json];
+
+      // Ensure each item has an id
+      result.forEach(item => {
+        if (!item.id && params.ids.length === 1) {
+          item.id = params.ids[0];
+        }
+      });
+
+      return { data: result };
+    });
   },
 
   getManyReference: (resource, params) => {
@@ -166,6 +266,11 @@ export const dataProvider = (role = 'Super Admin') => ({
         data = json.data;
         total = json.total || 0;
       }
+      // Handle inquiries endpoint specifically
+      else if (resource === 'inquiries' && json.inquiries) {
+        data = json.inquiries;
+        total = json.pagination ? json.pagination.total : (json.total || json.count || json.inquiries.length);
+      }
       // Handle other endpoints
       else {
         data = json[resource] || json.rows || json.data || json;
@@ -183,12 +288,22 @@ export const dataProvider = (role = 'Super Admin') => ({
     const endpoint = getEndpoint(resource, role);
 
     // Check if we have a file upload
-    if (params.data.file && params.data.file.rawFile) {
+    if (params.data.file) {
       // Create a FormData object
       const formData = new FormData();
 
-      // Add the file
-      formData.append('file', params.data.file.rawFile);
+      // Handle multiple files
+      if (Array.isArray(params.data.file)) {
+        // Multiple files
+        params.data.file.forEach((fileItem) => {
+          if (fileItem) {
+            formData.append('files', fileItem); // Use 'files' for multiple file uploads
+          }
+        });
+      } else if (params.data.file.rawFile) {
+        // Single file
+        formData.append('file', params.data.file);
+      }
 
       // Add other data fields
       Object.keys(params.data).forEach(key => {
@@ -229,12 +344,24 @@ export const dataProvider = (role = 'Super Admin') => ({
     const endpoint = getEndpoint(resource, role);
 
     // Check if we have a file upload
-    if (params.data.file && params.data.file.rawFile) {
+    if (params.data.file) {
       // Create a FormData object
       const formData = new FormData();
 
-      // Add the file
-      formData.append('file', params.data.file.rawFile);
+      // Handle multiple files
+      if (Array.isArray(params.data.file)) {
+        // Multiple files
+        params.data.file.forEach((fileItem) => {
+          if (fileItem) {
+            formData.append('files', fileItem); // Use 'files' for multiple file uploads
+          }
+        });
+        console.log(Object.fromEntries(formData))
+
+      } else if (params.data.file.rawFile) {
+        // Single file
+        formData.append('file', params.data.file);
+      }
 
       // Add other data fields
       Object.keys(params.data).forEach(key => {
@@ -242,6 +369,8 @@ export const dataProvider = (role = 'Super Admin') => ({
           formData.append(key, params.data[key]);
         }
       });
+
+      console.log(Object.fromEntries(formData))
 
       // Use fetch directly to handle FormData
       return fetch(`${apiUrl}${endpoint}/${params.id}`, {
