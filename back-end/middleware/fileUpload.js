@@ -39,14 +39,23 @@ const fileFilter = (req, file, cb) => {
   }
 };
 
-// Create multer upload instance
-const upload = multer({
+// Create multer upload instance for single file
+const uploadSingle = multer({
   storage: storage,
   limits: {
     fileSize: 5 * 1024 * 1024 // 5MB limit
   },
   fileFilter: fileFilter
 }).single('file'); // Use 'file' as the field name - this matches our frontend source="file"
+
+// Create multer upload instance for multiple files (up to 5)
+const uploadMultiple = multer({
+  storage: storage,
+  limits: {
+    fileSize: 5 * 1024 * 1024 // 5MB limit
+  },
+  fileFilter: fileFilter
+}).array('files', 5); // Allow up to 5 files with field name 'files'
 
 // Handle base64 image data
 const saveBase64Image = (base64String, prefix = 'product') => {
@@ -123,7 +132,8 @@ const processRawFile = async (file) => {
 };
 
 module.exports = {
-  upload,
+  uploadSingle,
+  uploadMultiple,
   saveBase64Image,
   processRawFile
 };

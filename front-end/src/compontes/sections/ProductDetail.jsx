@@ -4,9 +4,12 @@ import { ShopContext } from "../context/ShopContext";
 import ReviewCard from "../ui/ReviewCard";
 import ReviewForm from "../ui/ReviewForm";
 import RelatedProduct from "../ui/RelatedProducts";
+import ZoomableImage from "../ui/ZoomableImage";
+import InquiryModal from "../ui/InquiryModal";
 import { toast } from "react-toastify";
 import axiosInstance from "../../hooks/axiosInstance";
 import { ClipLoader } from "react-spinners";
+import { FaQuestionCircle } from "react-icons/fa";
 import { IMAGE_URL } from "../../config/index";
 
 function ProductDetail() {
@@ -16,6 +19,7 @@ function ProductDetail() {
   const [reviews, setReviews] = useState([]);
   const [reviewStats, setReviewStats] = useState({ averageRating: 0, totalReviews: 0 });
   const [CategoryName, setCategoryName] = useState();
+  const [isInquiryModalOpen, setIsInquiryModalOpen] = useState(false);
 
   // Fetch reviews for this product
   const fetchReviews = useCallback(async () => {
@@ -226,25 +230,45 @@ function ProductDetail() {
                       : (item.url || "/default-image.jpg");
 
                     return (
-                      <img
-                        onClick={() => setImage(imageUrl)}
-                        src={imageUrl}
+                      <div
                         key={index}
-                        className="w-[24%] sm:w-full sm:mb-3 flex-shrink-0 cursor-pointer"
-                        alt={`Product view ${index + 1}`}
-                      />
+                        onClick={() => setImage(imageUrl)}
+                        className={`w-[24%] sm:w-full sm:mb-3 flex-shrink-0 cursor-pointer border-2 rounded-md overflow-hidden transition-all duration-200 ${image === imageUrl ? 'border-green-800 shadow-md' : 'border-transparent hover:border-gray-300'}`}
+                      >
+                        <img
+                          src={imageUrl}
+                          className="w-full h-full object-cover"
+                          alt={`Product view ${index + 1}`}
+                        />
+                      </div>
                     );
                   })
                 ) : (
-                  <img
-                    src="/default-image.jpg"
-                    className="w-[24%] sm:w-full sm:mb-3 flex-shrink-0"
-                    alt="Default product image"
-                  />
+                  <div
+                    className="w-[24%] sm:w-full sm:mb-3 flex-shrink-0 border-2 border-gray-200 rounded-md overflow-hidden"
+                  >
+                    <img
+                      src="/default-image.jpg"
+                      className="w-full h-full object-cover"
+                      alt="Default product image"
+                    />
+                  </div>
                 )}
               </div>
-              <div className="w-full sm:w-[80%]">
-                <img className="w-full h-auto" src={image} alt="" />
+              <div className="w-full sm:w-[80%] border border-gray-200 rounded-md overflow-hidden relative group">
+                <ZoomableImage
+                  src={image}
+                  alt={productData.name || productData.title || "Product Image"}
+                  className="w-full h-auto"
+                />
+                <div className="absolute top-2 right-2 bg-white bg-opacity-70 rounded-full p-2 shadow-md opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+                  <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-gray-700" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                  </svg>
+                </div>
+                <div className="absolute bottom-2 left-2 bg-white bg-opacity-70 px-2 py-1 rounded text-xs text-gray-700 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+                  Hover to zoom
+                </div>
               </div>
             </div>
           </div>
@@ -302,7 +326,6 @@ function ProductDetail() {
             <button
               className="flex gap-4 text-lg bg-green-950 text-gray-400 p-4 w-[500px] justify-center"
               type="submit"
-            //   onClick={() => addToCart(quantity)}
             >
               <svg
                 xmlns="http://www.w3.org/2000/svg"
@@ -313,19 +336,27 @@ function ProductDetail() {
               >
                 <path d="M280-80q-33 0-56.5-23.5T200-160q0-33 23.5-56.5T280-240q33 0 56.5 23.5T360-160q0 33-23.5 56.5T280-80Zm400 0q-33 0-56.5-23.5T600-160q0-33 23.5-56.5T680-240q33 0 56.5 23.5T760-160q0 33-23.5 56.5T680-80ZM246-720l96 200h280l110-200H246Zm-38-80h590q23 0 35 20.5t1 41.5L692-482q-11 20-29.5 31T622-440H324l-44 80h480v80H280q-45 0-68-39.5t-2-78.5l54-98-144-304H40v-80h130l38 80Zm134 280h280-280Z" />
               </svg>
-              {/* <Link to={`/cart/${Number(productData.id)}`}> */}
               <p>Add to cart</p>
-              {/* </Link> */}
             </button>
           </form>
 
-          <div className="md:ml-12 pt-6 flex gap-2">
+          {/* Inquiry Button */}
+          <div className="md:ml-12 mt-4">
+            <button
+              onClick={() => setIsInquiryModalOpen(true)}
+              className="flex items-center gap-2 text-green-900 hover:text-green-700 transition-colors"
+            >
+              <FaQuestionCircle size={20} />
+              <span className="font-medium">Ask a question about this product</span>
+            </button>
+          </div>
+
+          {/* <div className="md:ml-12 pt-6 flex gap-2">
             <h1 className="">Catagory:</h1>
-            {/* Catagory of item here */}
             <a href="" className="font-bold text-green-900">
               {CategoryName}
             </a>
-          </div>
+          </div> */}
         </div>
       </section>
 
@@ -355,6 +386,14 @@ function ProductDetail() {
         </div>
         {productData.categoryId && <RelatedProduct subCategoryId={productData.categoryId} />}
       </section>
+
+      {/* Inquiry Modal */}
+      <InquiryModal
+        isOpen={isInquiryModalOpen}
+        onClose={() => setIsInquiryModalOpen(false)}
+        productId={productId}
+        productName={productData?.title || productData?.name || 'Product'}
+      />
     </>
   );
 }

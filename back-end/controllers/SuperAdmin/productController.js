@@ -192,7 +192,7 @@ exports.createProduct = async (req, res) => {
     if (images && images.length > 0) {
       const productImages = images.map((image, index) => ({
         productId: product.id,
-        imageUrl: image.imageUrl,
+        imageUrl:"/uploads" +  image.imageUrl,
         altText: image.altText || title,
         isPrimary: image.isPrimary || index === 0,
         displayOrder: image.displayOrder || index

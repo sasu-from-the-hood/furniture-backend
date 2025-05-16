@@ -66,10 +66,10 @@ const userRoutes = require('./routes/user/index');
 const chapaRoutes = require('./routes/payment/chapaRoutes');
 
 // Import file upload middleware
-const handleFileUpload = require('./middleware/uploadMiddleware');
+const { handleSingleFileUpload } = require('./middleware/uploadMiddleware');
 
 // Direct file upload route for testing or general use
-app.post('/api/upload', handleFileUpload, (req, res) => {
+app.post('/api/upload', handleSingleFileUpload, (req, res) => {
   try {
     if (!req.file) {
       return res.status(400).json({ message: 'No file uploaded' });
