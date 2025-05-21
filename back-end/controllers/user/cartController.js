@@ -45,7 +45,12 @@ exports.addToCart = async (req, res) => {
     if (!product) {
       return res.status(404).json({ message: 'Product not found' });
     }
-    
+
+    // Check if product is out of stock
+    if (!product.stockQuantity || product.stockQuantity <= 0) {
+      return res.status(400).json({ message: 'Product is out of stock' });
+    }
+
     // Check if item already exists in cart
     const existingCartItem = await Cart.findOne({
       where: {
@@ -53,12 +58,21 @@ exports.addToCart = async (req, res) => {
         furnitureId
       }
     });
-    
+
+    let newQuantity = parseInt(quantity);
+    if (existingCartItem) {
+      newQuantity = existingCartItem.quantity + parseInt(quantity);
+    }
+
+    // Check if requested quantity exceeds stock
+    if (newQuantity > product.stockQuantity) {
+      return res.status(400).json({ message: `Only ${product.stockQuantity} left in stock` });
+    }
+
     if (existingCartItem) {
       // Update quantity if item already exists
-      existingCartItem.quantity += parseInt(quantity);
+      existingCartItem.quantity = newQuantity;
       await existingCartItem.save();
-      
       res.status(200).json({
         message: 'Cart updated successfully',
         cartItem: existingCartItem
@@ -70,7 +84,6 @@ exports.addToCart = async (req, res) => {
         furnitureId,
         quantity: parseInt(quantity)
       });
-      
       const newCartItem = await Cart.findByPk(cartItem.id, {
         include: [
           {
@@ -85,7 +98,6 @@ exports.addToCart = async (req, res) => {
           }
         ]
       });
-      
       res.status(201).json({
         message: 'Item added to cart successfully',
         cartItem: newCartItem

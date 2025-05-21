@@ -1,4 +1,4 @@
-const { Order, OrderProduct, Product, ProductImage, User, sequelize } = require('../../models');
+const { Order, OrderProduct, Product, ProductImage, User, sequelize  ,Cart} = require('../../models');
 const { Op } = require('sequelize');
 
 // Get all orders for the authenticated user
@@ -99,6 +99,19 @@ exports.createOrder = async (req, res) => {
       return res.status(400).json({ message: 'No items in cart' });
     }
 
+    // Check stock for each item before proceeding
+    for (const item of items) {
+      const product = await Product.findByPk(item.furnitureId, { transaction });
+      if (!product) {
+        await transaction.rollback();
+        return res.status(404).json({ message: `Product with ID ${item.furnitureId} not found` });
+      }
+      if (!product.stockQuantity || product.stockQuantity < item.quantity) {
+        await transaction.rollback();
+        return res.status(400).json({ message: `Not enough stock for product: ${product.title}` });
+      }
+    }
+
     // Calculate order totals
     let subtotal = 0;
     items.forEach(item => {
@@ -129,7 +142,7 @@ exports.createOrder = async (req, res) => {
       notes: userData?.notes || ''
     }, { transaction });
 
-    // Create order items
+    // Create order items and update stock
     for (const item of items) {
       await OrderProduct.create({
         orderId: order.id,
@@ -139,7 +152,7 @@ exports.createOrder = async (req, res) => {
         totalPrice: item.furniture.price * item.quantity
       }, { transaction });
 
-      // Update product stock (optional)
+      // Update product stock
       const product = await Product.findByPk(item.furnitureId, { transaction });
       if (product && product.stockQuantity !== null) {
         product.stockQuantity -= item.quantity;
@@ -149,6 +162,10 @@ exports.createOrder = async (req, res) => {
         await product.save({ transaction });
       }
     }
+
+    // Remove only the ordered items from the user's cart
+    const cartItemIds = items.map(item => item.furnitureId);
+    await Cart.destroy({ where: { userId, furnitureId: cartItemIds }, transaction });
 
     // Commit transaction
     await transaction.commit();

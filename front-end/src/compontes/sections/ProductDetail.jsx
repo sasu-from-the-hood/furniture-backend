@@ -171,6 +171,10 @@ function ProductDetail() {
     );
   if (error) return <p>Error: {error}</p>;
   if (!productData) return <p>No product found</p>;
+
+  // Stock status
+  const isOutOfStock = !productData.stockQuantity || productData.stockQuantity <= 0;
+
   const tabContent = {
     description: (
       <div className="">
@@ -178,13 +182,13 @@ function ProductDetail() {
           {productData.longDesc}
           <br />A sleek, minimalist chair designed for contemporary spaces,
           combining clean lines with ergonomic comfort. Crafted with a durable
-          metal frame and a soft, cushioned seat, it’s perfect for a modern home
+          metal frame and a soft, cushioned seat, it's perfect for a modern home
           office or dining area. Available in neutral tones to complement any
           décor.
         </p>
       </div>
     ),
-        review: (
+    review: (
       <>
         <div>
           <div className="space-y-4 mb-4">
@@ -305,6 +309,14 @@ function ProductDetail() {
             {productData.description}
           </p>
 
+          <div className="mb-2">
+            {isOutOfStock ? (
+              <span className="text-red-600 font-bold">Out of Stock</span>
+            ) : (
+              <span className="text-green-600">In Stock: {productData.stockQuantity}</span>
+            )}
+          </div>
+
           <form
             className="flex md:ml-12 gap-4 pt-4"
             onSubmit={(e) => {
@@ -324,8 +336,9 @@ function ProductDetail() {
               />
             </label>
             <button
-              className="flex gap-4 text-lg bg-green-950 text-gray-400 p-4 w-[500px] justify-center"
+              className={`flex gap-4 text-lg bg-green-950 text-gray-400 p-4 w-[500px] justify-center ${isOutOfStock ? 'bg-gray-400 cursor-not-allowed' : 'bg-green-700 hover:bg-green-900'}`}
               type="submit"
+              disabled={isOutOfStock}
             >
               <svg
                 xmlns="http://www.w3.org/2000/svg"
@@ -336,7 +349,7 @@ function ProductDetail() {
               >
                 <path d="M280-80q-33 0-56.5-23.5T200-160q0-33 23.5-56.5T280-240q33 0 56.5 23.5T360-160q0 33-23.5 56.5T280-80Zm400 0q-33 0-56.5-23.5T600-160q0-33 23.5-56.5T680-240q33 0 56.5 23.5T760-160q0 33-23.5 56.5T680-80ZM246-720l96 200h280l110-200H246Zm-38-80h590q23 0 35 20.5t1 41.5L692-482q-11 20-29.5 31T622-440H324l-44 80h480v80H280q-45 0-68-39.5t-2-78.5l54-98-144-304H40v-80h130l38 80Zm134 280h280-280Z" />
               </svg>
-              <p>Add to cart</p>
+              <p>{isOutOfStock ? 'Out of Stock' : 'Add to Cart'}</p>
             </button>
           </form>
 

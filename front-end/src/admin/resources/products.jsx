@@ -49,6 +49,7 @@ export const ProductList = (props) => (
       <TextField source="title" />
       <TextField source="shortDesc" />
       <NumberField source="price" options={{ style: 'currency', currency: 'USD' }} />
+      <NumberField source="stockQuantity" label="Stock" />
       <TextField source="category.name" label="Category" />
       <BooleanField source="isActive" />
       <EditButton />
@@ -72,6 +73,7 @@ export const ProductEdit = (props) => (
         <TextInput source="shortDesc" validate={required()} multiline />
         <TextInput source="longDesc" validate={required()} multiline />
         <NumberInput source="price" validate={[required(), minValue(0)]} />
+        <NumberInput source="stockQuantity" label="Stock" validate={[required(), minValue(0)]} />
         {/* SKU is auto-generated on the backend */}
         <ReferenceInput source="categoryId" reference="categories">
           <SelectInput optionText="name" validate={required()} />
@@ -132,6 +134,7 @@ export const ProductCreate = (props) => (
         <TextInput source="shortDesc" validate={required()} multiline />
         <TextInput source="longDesc" validate={required()} multiline />
         <NumberInput source="price" validate={[required(), minValue(0)]} />
+        <NumberInput source="stockQuantity" label="Stock" validate={[required(), minValue(0)]} />
         {/* SKU is auto-generated on the backend */}
         <ReferenceInput source="categoryId" reference="categories">
           <SelectInput optionText="name" validate={required()} />

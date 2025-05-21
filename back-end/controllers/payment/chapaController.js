@@ -1,5 +1,5 @@
 const axios = require('axios');
-const { Order, User } = require('../../models');
+const { Order, User, Product, OrderProduct } = require('../../models');
 const { v4: uuidv4 } = require('uuid');
 
 // Chapa API configuration
@@ -61,24 +61,33 @@ exports.initializePayment = async (req, res) => {
     };
 
     // Make request to Chapa API
-    const response = await axios.post(`${CHAPA_API_URL}/v1/transaction/initialize`, paymentData, {
-      headers: {
-        'Authorization': `Bearer ${CHAPA_SECRET_KEY}`,
-        'Content-Type': 'application/json'
-      }
-    });
+    try {
+      const response = await axios.post(`${CHAPA_API_URL}/v1/transaction/initialize`, paymentData, {
+        headers: {
+          'Authorization': `Bearer ${CHAPA_SECRET_KEY}`,
+          'Content-Type': 'application/json'
+        }
+      });
 
-    // Update order with payment information
-    order.paymentMethod = 'chapa';
-    order.paymentStatus = 'pending';
-    await order.save();
+      // Update order with payment information
+      order.paymentMethod = 'chapa';
+      order.paymentStatus = 'pending';
+      await order.save();
 
-    // Return the payment URL to the client
-    res.json({
-      message: 'Payment initialized successfully',
-      checkoutUrl: response.data.data.checkout_url,
-      transactionRef: tx_ref
-    });
+      // Return the payment URL to the client
+      res.json({
+        message: 'Payment initialized successfully',
+        checkoutUrl: response.data.data.checkout_url,
+        transactionRef: tx_ref
+      });
+    } catch (error) {
+      // Log and return the full Chapa error response
+      console.error('Error initializing payment:', error.response?.data || error.message);
+      res.status(500).json({
+        message: 'Failed to initialize payment',
+        chapaError: error.response?.data || error.message
+      });
+    }
   } catch (error) {
     console.error('Error initializing payment:', error);
     res.status(500).json({
@@ -126,6 +135,17 @@ exports.verifyPayment = async (req, res) => {
           order.status = 'confirmed';
           order.paymentId = paymentData.payment_id || '';
           await order.save();
+
+          // Decrease stock for each product in the order
+          const orderProducts = await OrderProduct.findAll({ where: { orderId: order.id } });
+          for (const op of orderProducts) {
+            const product = await Product.findByPk(op.productId);
+            if (product && product.stockQuantity !== null && product.stockQuantity > 0) {
+              product.stockQuantity -= op.quantity;
+              if (product.stockQuantity < 0) product.stockQuantity = 0;
+              await product.save();
+            }
+          }
 
           return res.json({
             message: 'Payment verified successfully',
@@ -237,6 +257,17 @@ exports.handleCallback = async (req, res) => {
       order.paymentStatus = 'paid';
       order.status = 'confirmed';
       order.paymentId = payment_id || '';
+
+      // Decrease stock for each product in the order
+      const orderProducts = await OrderProduct.findAll({ where: { orderId: order.id } });
+      for (const op of orderProducts) {
+        const product = await Product.findByPk(op.productId);
+        if (product && product.stockQuantity !== null && product.stockQuantity > 0) {
+          product.stockQuantity -= op.quantity;
+          if (product.stockQuantity < 0) product.stockQuantity = 0;
+          await product.save();
+        }
+      }
     } else {
       order.paymentStatus = 'failed';
     }
