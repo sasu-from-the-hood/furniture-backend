@@ -1,5 +1,5 @@
 import CartItem from "../compontes/ui/CartItem";
-import { useContext, useState } from "react";
+import { useContext, useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 
 import { ShopContext } from "../compontes/context/ShopContext";
@@ -9,6 +9,14 @@ import InputValidation from "../utils/InputValidation";
 function OrderPage() {
   const { username, userEmail, checkout } = useContext(ShopContext);
   const navigate = useNavigate();
+
+  // Get selected cart items from localStorage
+  const [selectedCartItems, setSelectedCartItems] = useState([]);
+
+  useEffect(() => {
+    const items = JSON.parse(localStorage.getItem('selectedCartItems')) || [];
+    setSelectedCartItems(items);
+  }, []);
 
   // Split the username into first and last name if possible
   const nameParts = username ? username.split(' ') : ['', ''];
@@ -40,18 +48,17 @@ function OrderPage() {
 
   const onSubmitHandler = async (event) => {
     event.preventDefault(); // Prevent default behavior.
-    console.log(formData);
-
     if (!formData.city || !formData.phone) {
       toast.error("Please fill in all required fields");
       return;
     }
-
+    if (selectedCartItems.length === 0) {
+      toast.error("No items selected for order.");
+      return;
+    }
     try {
-      // Use the checkout function from ShopContext
-      await checkout(formData);
-
-      // Navigate to orders page after successful checkout
+      // Use the checkout function from ShopContext, pass selectedCartItems
+      await checkout(formData, selectedCartItems);
       navigate("/orders");
     } catch (error) {
       console.error("Error during checkout:", error);
@@ -121,11 +128,14 @@ function OrderPage() {
           </div>
         </div>
         <div className="mt-4">
-          <CartItem />
+          <CartItem cart={selectedCartItems} selectedItems={selectedCartItems.map(item => item.id)} />
           <div className="w-full text-end">
-            <button type="submit" className="bg-green-800 p-2 mt-8 ">
+            <button type="submit" className="bg-green-800 p-2 mt-8 " disabled={selectedCartItems.length === 0}>
               <span className="font-semibold">ORDER NOW</span>
             </button>
+            {selectedCartItems.length === 0 && (
+              <div className="text-red-600 mt-2">No items selected for order.</div>
+            )}
           </div>
         </div>
       </form>

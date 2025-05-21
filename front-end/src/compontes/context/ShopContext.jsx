@@ -311,14 +311,17 @@ const ShopContextProvider = (props) => {
   }, [setSelectedCategory, getProductsByCategory]);
 
 
-  const checkout = async (formData) => {
+  const checkout = async (formData, selectedItems = null) => {
+    // Use selectedItems if provided, otherwise use the full cart
+    const itemsToOrder = Array.isArray(selectedItems) && selectedItems.length > 0 ? selectedItems : cart;
     const orderData = {
       user: formData,
-      items: cart,
-      totalAmount: cart.reduce(
-        (sum, item) => sum + item.furniture.price * item.quantity,
-        0
-      ) + deliveryFee,
+      items: itemsToOrder,
+      totalAmount:
+        itemsToOrder.reduce(
+          (sum, item) => sum + item.furniture.price * item.quantity,
+          0
+        ) + deliveryFee,
     };
 
     try {
