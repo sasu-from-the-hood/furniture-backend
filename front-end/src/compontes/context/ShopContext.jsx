@@ -311,14 +311,17 @@ const ShopContextProvider = (props) => {
   }, [setSelectedCategory, getProductsByCategory]);
 
 
-  const checkout = async (formData) => {
+  const checkout = async (formData, selectedItems = null) => {
+    // Use selectedItems if provided, otherwise use the full cart
+    const itemsToOrder = Array.isArray(selectedItems) && selectedItems.length > 0 ? selectedItems : cart;
     const orderData = {
       user: formData,
-      items: cart,
-      totalAmount: cart.reduce(
-        (sum, item) => sum + item.furniture.price * item.quantity,
-        0
-      ) + deliveryFee,
+      items: itemsToOrder,
+      totalAmount:
+        itemsToOrder.reduce(
+          (sum, item) => sum + item.furniture.price * item.quantity,
+          0
+        ) + deliveryFee,
     };
 
     try {
@@ -331,8 +334,12 @@ const ShopContextProvider = (props) => {
       });
 
       if (!response.ok) {
-        console.log(response.error)
-        throw new Error("Failed to process order");
+        let errorMsg = "Failed to process order";
+        try {
+          const errorData = await response.json();
+          if (errorData && errorData.message) errorMsg = errorData.message;
+        } catch (e) {}
+        throw new Error(errorMsg);
       }
 
       // Update orders and clear cart
@@ -342,7 +349,7 @@ const ShopContextProvider = (props) => {
       // Redirect to orders page handled by the component that calls this function
     } catch (error) {
       console.error("Checkout error:", error);
-      toast.error("Failed to place order. Please try again.");
+      toast.error(error.message || "Failed to place order. Please try again.");
     }
   };
 

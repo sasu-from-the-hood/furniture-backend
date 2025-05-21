@@ -5,17 +5,16 @@ import { ShopContext } from '../context/ShopContext';
 function CartItem(props) {
 
   const {cart, deliveryFee} = useContext(ShopContext);
+  const { selectedItems = [] } = props;
   const [subTotal, setSubTotal] = useState(0);
   
-  const calculateTotal = () => {
-    const total = cart.reduce((sum, item) => sum + (item.furniture.price * item.quantity), 0);
-    setSubTotal(total);
-    }
-    
-
   useEffect(() => {
-    calculateTotal();
-  },[cart])
+    // Calculate subtotal for selected items only
+    const total = cart
+      .filter(item => selectedItems.includes(item.id))
+      .reduce((sum, item) => sum + (item.furniture.price * item.quantity), 0);
+    setSubTotal(total);
+  }, [cart, selectedItems]);
 
   return (
     <>
@@ -29,21 +28,21 @@ function CartItem(props) {
     {/* Subtotal */}
     <div className="flex justify-between">
       <p>Subtotal</p>
-      <p>{subTotal} ETB</p>
+      <p>{subTotal.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })} ETB</p>
     </div>
     <hr />
     
     {/* Shipping */}
     <div className="flex justify-between">
       <p>Shipping</p>
-      <p>{deliveryFee} ETB</p>
+      <p>{deliveryFee ? deliveryFee.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 }) : '0.00'} ETB</p>
     </div>
     <hr />
 
     {/* Total */}
     <div className="flex justify-between">
       <b>Total</b>
-      <b>{subTotal + deliveryFee} ETB</b>
+      <b>{(subTotal + (deliveryFee || 0)).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })} ETB</b>
     </div>
   </div>
 </div>
