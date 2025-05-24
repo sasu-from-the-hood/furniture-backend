@@ -7,12 +7,8 @@ import { ShopContext } from "../compontes/context/ShopContext.jsx";
 import { IMAGE_URL } from "../config/index.js";
 
 function Home() {
-  const {
-    products,
-    handleCategoryChange,
-    siteSettings,
-    getSettings
-  } = useContext(ShopContext);
+  const { products, handleCategoryChange, siteSettings, getSettings } =
+    useContext(ShopContext);
   const [currentIndex, setCurrentIndex] = useState(0);
   const navigate = useNavigate();
 
@@ -45,7 +41,9 @@ function Home() {
   };
 
   const handlePrevious = () => {
-    setCurrentIndex((prevIndex) => (prevIndex - 1 + categories.length) % categories.length);
+    setCurrentIndex(
+      (prevIndex) => (prevIndex - 1 + categories.length) % categories.length
+    );
   };
 
   const currentCategory = categories[currentIndex];
@@ -54,7 +52,7 @@ function Home() {
     <>
       {/* Hero Section */}
       <div className="home-page pt-4">
-        <section className="relative flex flex-col md:flex-row items-center justify-center pt-[120px] px-4 md:px-[200px] h-screen w-[95%] mx-auto bg-white z-0 rounded overflow-hidden">
+        <section className="relative flex flex-col md:flex-row items-center justify-center px-4 md:px-[200px] h-screen w-[95%] mx-auto bg-white z-0 rounded overflow-hidden">
           {/* Text Container */}
           <div className="landingText text-center mx-auto md:text-left md:pr-8">
             <h1 className="text-4xl font-semibold tracking-wide animate-fade-in">
@@ -64,7 +62,12 @@ function Home() {
               Explore our {currentCategory.name} collection
             </p>
             <button className="mt-12 w-[130px] min-w-[100px] p-[6px] border-solid border-2 rounded-md border-black hover:bg-gray-950 hover:text-white flex items-center justify-center whitespace-nowrap">
-              <Link to="/shop" onClick={() => handleCategoryChange(currentCategory.id)}>Shop Now</Link>
+              <Link
+                to="/shop"
+                onClick={() => handleCategoryChange(currentCategory.id)}
+              >
+                Shop Now
+              </Link>
             </button>
           </div>
 
@@ -148,7 +151,10 @@ function Home() {
                 <div className="relative h-96 w-full rounded-xl overflow-hidden shadow-lg border border-gray-200 bg-white group transition-transform duration-300 ease-in-out hover:shadow-2xl hover:-translate-y-2">
                   {/* Image with Hover Overlay */}
                   <img
-                    src={IMAGE_URL +product?.images[0]?.imageUrl || "/default-image.jpg"}
+                    src={
+                      IMAGE_URL + product?.images[0]?.imageUrl ||
+                      "/default-image.jpg"
+                    }
                     alt={product?.title}
                     className="h-96 w-full object-contain transition-transform duration-300 ease-in-out group-hover:scale-105"
                   />
@@ -187,16 +193,32 @@ function Home() {
         {/* Site Description Banner */}
         {siteSettings.site_description && (
           <div className="mb-10 p-6 rounded-lg text-center">
-            <p className="text-lg text-green-800">{siteSettings.site_description}</p>
+            <p className="text-lg text-green-800">
+              {siteSettings.site_description}
+            </p>
           </div>
         )}
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-          {(siteSettings.why_choose_us_reasons || [
-            { title: 'Craftsmanship', description: 'Experience unmatched quality and detail in every product.' },
-            { title: 'Sustainability', description: 'We prioritize eco-friendly and ethical practices.' },
-            { title: 'Exclusivity', description: 'Our collections are curated to offer unique and timeless elegance.' }
-          ]).map((reason, index) => (
+          {(
+            siteSettings.why_choose_us_reasons || [
+              {
+                title: "Craftsmanship",
+                description:
+                  "Experience unmatched quality and detail in every product.",
+              },
+              {
+                title: "Sustainability",
+                description:
+                  "We prioritize eco-friendly and ethical practices.",
+              },
+              {
+                title: "Exclusivity",
+                description:
+                  "Our collections are curated to offer unique and timeless elegance.",
+              },
+            ]
+          ).map((reason, index) => (
             <div key={index} className="text-center">
               <h3 className="text-xl font-semibold mb-2">{reason.title}</h3>
               <p className="text-gray-600">{reason.description}</p>
@@ -214,7 +236,10 @@ function Home() {
         <div className="relative w-full max-w-4xl mx-auto aspect-video">
           <iframe
             className="rounded-lg shadow-lg w-full h-full border-0"
-            src={siteSettings.video_url || "https://www.youtube.com/embed/dQw4w9WgXcQ"}
+            src={
+              siteSettings.video_url ||
+              "https://www.youtube.com/embed/dQw4w9WgXcQ"
+            }
             title="Product Video"
             allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
             allowFullScreen
@@ -228,24 +253,28 @@ function Home() {
           What Our <span className="text-green-700 font-bold">Clients</span> Say
         </h2>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-          {(siteSettings.testimonials || [
-            {
-              quote: 'Their products are truly exquisite and add elegance to any space.',
-              author: 'Alex Johnson'
-            },
-            {
-              quote: 'Exceptional craftsmanship and quality. Highly recommended!',
-              author: 'Sarah Williams'
-            },
-            {
-              quote: `${siteSettings.site_name || 'European Luxury'} is my go-to for elegant and unique home pieces.`,
-              author: 'Michael Lee'
-            }
-          ]).map((testimonial, index) => (
+          {(
+            siteSettings.testimonials || [
+              {
+                quote:
+                  "Their products are truly exquisite and add elegance to any space.",
+                author: "Alex Johnson",
+              },
+              {
+                quote:
+                  "Exceptional craftsmanship and quality. Highly recommended!",
+                author: "Sarah Williams",
+              },
+              {
+                quote: `${
+                  siteSettings.site_name || "European Luxury"
+                } is my go-to for elegant and unique home pieces.`,
+                author: "Michael Lee",
+              },
+            ]
+          ).map((testimonial, index) => (
             <div key={index} className="p-6 bg-white rounded-lg shadow-lg">
-              <p className="text-gray-600">
-                &ldquo;{testimonial.quote}&rdquo;
-              </p>
+              <p className="text-gray-600">&ldquo;{testimonial.quote}&rdquo;</p>
               <p className="mt-4 font-semibold">- {testimonial.author}</p>
             </div>
           ))}
@@ -260,20 +289,44 @@ function Home() {
         {/* Contact Information from Settings */}
         {(siteSettings.contact_email || siteSettings.contact_phone) && (
           <div className="mb-8 p-4 bg-white rounded-lg shadow-md max-w-3xl mx-auto">
-            <h3 className="text-xl font-semibold mb-4 text-center">Contact Information</h3>
+            <h3 className="text-xl font-semibold mb-4 text-center">
+              Contact Information
+            </h3>
             <div className="flex flex-col md:flex-row justify-center items-center gap-6">
               {siteSettings.contact_email && (
                 <div className="flex items-center gap-2">
-                  <svg className="w-5 h-5 text-green-700" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"></path>
+                  <svg
+                    className="w-5 h-5 text-green-700"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                    xmlns="http://www.w3.org/2000/svg"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth="2"
+                      d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"
+                    ></path>
                   </svg>
                   <span>{siteSettings.contact_email}</span>
                 </div>
               )}
               {siteSettings.contact_phone && (
                 <div className="flex items-center gap-2">
-                  <svg className="w-5 h-5 text-green-700" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z"></path>
+                  <svg
+                    className="w-5 h-5 text-green-700"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                    xmlns="http://www.w3.org/2000/svg"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth="2"
+                      d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z"
+                    ></path>
                   </svg>
                   <span>{siteSettings.contact_phone}</span>
                 </div>
