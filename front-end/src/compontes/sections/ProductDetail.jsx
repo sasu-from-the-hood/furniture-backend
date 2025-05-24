@@ -17,7 +17,10 @@ function ProductDetail() {
   const [quantity, setQuantity] = useState(1);
   const [image, setImage] = useState("");
   const [reviews, setReviews] = useState([]);
-  const [reviewStats, setReviewStats] = useState({ averageRating: 0, totalReviews: 0 });
+  const [reviewStats, setReviewStats] = useState({
+    averageRating: 0,
+    totalReviews: 0,
+  });
   const [CategoryName, setCategoryName] = useState();
   const [isInquiryModalOpen, setIsInquiryModalOpen] = useState(false);
 
@@ -25,12 +28,14 @@ function ProductDetail() {
   const fetchReviews = useCallback(async () => {
     try {
       console.log("Fetching reviews for product ID:", productId);
-      const response = await axiosInstance.get(`/reviews/products/${productId}/reviews`);
+      const response = await axiosInstance.get(
+        `/reviews/products/${productId}/reviews`
+      );
       console.log("Reviews response:", response.data);
 
       if (response.data) {
         // Process reviews to include user information
-        const processedReviews = (response.data.reviews || []).map(review => {
+        const processedReviews = (response.data.reviews || []).map((review) => {
           return {
             id: review.id,
             rating: review.rating,
@@ -38,13 +43,15 @@ function ProductDetail() {
             createdAt: review.createdAt,
             // Include user information if available
             reviewBy: review.user ? review.user.name : "Anonymous",
-            userEmail: review.user ? review.user.email : ""
+            userEmail: review.user ? review.user.email : "",
           };
         });
 
         console.log("Processed reviews:", processedReviews);
         setReviews(processedReviews);
-        setReviewStats(response.data.stats || { averageRating: 0, totalReviews: 0 });
+        setReviewStats(
+          response.data.stats || { averageRating: 0, totalReviews: 0 }
+        );
         console.log("Review stats set:", response.data.stats);
       }
     } catch (error) {
@@ -57,9 +64,9 @@ function ProductDetail() {
     fetchReviews();
   }, [fetchReviews]);
 
-  const { getCart, getProductById, loading, error, categories } = useContext(ShopContext);
+  const { getCart, getProductById, loading, error, categories } =
+    useContext(ShopContext);
   const [productData, setProduct] = useState(null);
-
 
   const addToCart = async (quantity) => {
     try {
@@ -81,13 +88,15 @@ function ProductDetail() {
       // More detailed error message
       if (error.response) {
         console.log("Error response:", error.response.data);
-        toast.error(error.response.data.message || "Failed to add item to cart. Please try again.");
+        toast.error(
+          error.response.data.message ||
+            "Failed to add item to cart. Please try again."
+        );
       } else {
         toast.error("Failed to add item to cart. Please try again.");
       }
     }
   };
-
 
   useEffect(() => {
     const fetchProduct = async () => {
@@ -135,7 +144,9 @@ function ProductDetail() {
     }
 
     // First try to find a direct match
-    const foundCategory = categories.find(category => category.id === productData.categoryId);
+    const foundCategory = categories.find(
+      (category) => category.id === productData.categoryId
+    );
     if (foundCategory) {
       setCategoryName(foundCategory.name);
       console.log("Category found:", foundCategory.name);
@@ -143,10 +154,10 @@ function ProductDetail() {
     }
 
     // If not found, search in subcategories
-    categories.forEach(category => {
+    categories.forEach((category) => {
       if (category.subcategories && Array.isArray(category.subcategories)) {
         const subCategory = category.subcategories.find(
-          subCat => subCat.id === productData.categoryId
+          (subCat) => subCat.id === productData.categoryId
         );
         if (subCategory) {
           setCategoryName(subCategory.name);
@@ -173,7 +184,8 @@ function ProductDetail() {
   if (!productData) return <p>No product found</p>;
 
   // Stock status
-  const isOutOfStock = !productData.stockQuantity || productData.stockQuantity <= 0;
+  const isOutOfStock =
+    !productData.stockQuantity || productData.stockQuantity <= 0;
 
   const tabContent = {
     description: (
@@ -206,15 +218,11 @@ function ProductDetail() {
             )}
           </div>
           <h3>Leave a Review</h3>
-          <ReviewForm
-            productId={productId}
-            onReviewSubmitted={fetchReviews}
-          />
+          <ReviewForm productId={productId} onReviewSubmitted={fetchReviews} />
         </div>
       </>
     ),
   };
-
 
   return (
     <>
@@ -229,13 +237,17 @@ function ProductDetail() {
                     // Determine the correct image URL
                     const imageUrl = item.imageUrl
                       ? `${IMAGE_URL}${item.imageUrl}`
-                      : (item.url || "/default-image.jpg");
+                      : item.url || "/default-image.jpg";
 
                     return (
                       <div
                         key={index}
                         onClick={() => setImage(imageUrl)}
-                        className={`w-[24%] sm:w-full sm:mb-3 flex-shrink-0 cursor-pointer border-2 rounded-md overflow-hidden transition-all duration-200 ${image === imageUrl ? 'border-green-800 shadow-md' : 'border-transparent hover:border-gray-300'}`}
+                        className={`w-[24%] sm:w-full sm:mb-3 flex-shrink-0 cursor-pointer border-2 rounded-md overflow-hidden transition-all duration-200 ${
+                          image === imageUrl
+                            ? "border-green-800 shadow-md"
+                            : "border-transparent hover:border-gray-300"
+                        }`}
                       >
                         <img
                           src={imageUrl}
@@ -246,9 +258,7 @@ function ProductDetail() {
                     );
                   })
                 ) : (
-                  <div
-                    className="w-[24%] sm:w-full sm:mb-3 flex-shrink-0 border-2 border-gray-200 rounded-md overflow-hidden"
-                  >
+                  <div className="w-[24%] sm:w-full sm:mb-3 flex-shrink-0 border-2 border-gray-200 rounded-md overflow-hidden">
                     <img
                       src="/default-image.jpg"
                       className="w-full h-full object-cover"
@@ -264,8 +274,19 @@ function ProductDetail() {
                   className="w-full h-auto"
                 />
                 <div className="absolute top-2 right-2 bg-white bg-opacity-70 rounded-full p-2 shadow-md opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-                  <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-gray-700" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    className="h-5 w-5 text-gray-700"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    stroke="currentColor"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
+                    />
                   </svg>
                 </div>
                 <div className="absolute bottom-2 left-2 bg-white bg-opacity-70 px-2 py-1 rounded text-xs text-gray-700 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
@@ -284,7 +305,9 @@ function ProductDetail() {
           {/* Dynamic product review here */}
           <div className="flex items-center text-gray-600 gap-4 lg:ml-12 sm:ml-0 py-4">
             {/* average rating */}
+
             <h1 className="text-2xl bg-gray-300 rounded-xl p-2">{!isNaN(reviewStats.averageRating)   ? reviewStats.averageRating  : "0.0"}</h1>
+
             {/* dynamic review stars */}
             <div>
               <div className="text-xl text-yellow-500">
@@ -296,7 +319,9 @@ function ProductDetail() {
               </div>
             </div>
             {/* Total number of reviews */}
-            <p className="tracking-widest text-lg">({reviewStats.totalReviews || 0})</p>
+            <p className="tracking-widest text-lg">
+              ({reviewStats.totalReviews || 0})
+            </p>
           </div>
 
           <h1 className="text-2xl text-gray-600 lg:ml-12 sm:ml-0">
@@ -311,7 +336,9 @@ function ProductDetail() {
             {isOutOfStock ? (
               <span className="text-red-600 font-bold">Out of Stock</span>
             ) : (
-              <span className="text-green-600">In Stock: {productData.stockQuantity}</span>
+              <span className="text-green-600">
+                In Stock: {productData.stockQuantity}
+              </span>
             )}
           </div>
 
@@ -334,7 +361,11 @@ function ProductDetail() {
               />
             </label>
             <button
-              className={`flex gap-4 text-lg bg-green-950 text-gray-400 p-4 w-[500px] justify-center ${isOutOfStock ? 'bg-gray-400 cursor-not-allowed' : 'bg-green-700 hover:bg-green-900'}`}
+              className={`flex gap-4 text-lg bg-green-950 text-gray-400 p-4 w-[500px] justify-center ${
+                isOutOfStock
+                  ? "bg-gray-400 cursor-not-allowed"
+                  : "bg-green-700 hover:bg-green-900"
+              }`}
               type="submit"
               disabled={isOutOfStock}
             >
@@ -347,7 +378,7 @@ function ProductDetail() {
               >
                 <path d="M280-80q-33 0-56.5-23.5T200-160q0-33 23.5-56.5T280-240q33 0 56.5 23.5T360-160q0 33-23.5 56.5T280-80Zm400 0q-33 0-56.5-23.5T600-160q0-33 23.5-56.5T680-240q33 0 56.5 23.5T760-160q0 33-23.5 56.5T680-80ZM246-720l96 200h280l110-200H246Zm-38-80h590q23 0 35 20.5t1 41.5L692-482q-11 20-29.5 31T622-440H324l-44 80h480v80H280q-45 0-68-39.5t-2-78.5l54-98-144-304H40v-80h130l38 80Zm134 280h280-280Z" />
               </svg>
-              <p>{isOutOfStock ? 'Out of Stock' : 'Add to Cart'}</p>
+              <p>{isOutOfStock ? "Out of Stock" : "Add to Cart"}</p>
             </button>
           </form>
 
@@ -358,7 +389,9 @@ function ProductDetail() {
               className="flex items-center gap-2 text-green-900 hover:text-green-700 transition-colors"
             >
               <FaQuestionCircle size={20} />
-              <span className="font-medium">Ask a question about this product</span>
+              <span className="font-medium">
+                Ask a question about this product
+              </span>
             </button>
           </div>
 
@@ -377,17 +410,18 @@ function ProductDetail() {
           {["description", "review"].map((tab) => (
             <button
               key={tab}
-              className={`tab-btn px-4 py-2 text-lg ${activeTab === tab
-                ? "font-semibold border-b-2 border-green-900"
-                : ""
-                }`}
+              className={`tab-btn px-4 py-2 text-lg ${
+                activeTab === tab
+                  ? "font-semibold border-b-2 border-green-900"
+                  : ""
+              }`}
               onClick={() => setActiveTab(tab)}
             >
               {tab === "description"
                 ? "Description"
                 : tab === "additional-info"
-                  ? "Additional Information"
-                  : "Review"}
+                ? "Additional Information"
+                : "Review"}
             </button>
           ))}
         </div>
@@ -395,7 +429,9 @@ function ProductDetail() {
         <div className="tab-content mt-4 w-72 min-[600px]:w-full min-[500px]:ml-0 ml-[-4rem] min-[]">
           {tabContent[activeTab]}
         </div>
-        {productData.categoryId && <RelatedProduct subCategoryId={productData.categoryId} />}
+        {productData.categoryId && (
+          <RelatedProduct subCategoryId={productData.categoryId} />
+        )}
       </section>
 
       {/* Inquiry Modal */}
@@ -403,7 +439,7 @@ function ProductDetail() {
         isOpen={isInquiryModalOpen}
         onClose={() => setIsInquiryModalOpen(false)}
         productId={productId}
-        productName={productData?.title || productData?.name || 'Product'}
+        productName={productData?.title || productData?.name || "Product"}
       />
     </>
   );
