@@ -239,7 +239,8 @@ exports.updateProduct = async (req, res) => {
       price,
       categoryId,
       isActive,
-      images
+      images,
+      stockQuantity
     } = req.body;
 
     const product = await Product.findByPk(id, { transaction });
@@ -266,21 +267,22 @@ exports.updateProduct = async (req, res) => {
       longDesc: longDesc || product.longDesc,
       price: price || product.price,
       categoryId: categoryId || product.categoryId,
-      isActive: isActive !== undefined ? isActive : product.isActive
+      isActive: isActive !== undefined ? isActive : product.isActive,
+      stockQuantity : stockQuantity  || product.stockQuantity
     }, { transaction });
 
-    if (images && images.length > 0) {
+    if (images && images.length > 0 ) {
       await ProductImage.destroy({
         where: { productId: id },
         transaction
       });
 
       const productImages = images.map((image, index) => {
-        if (!image.imageUrl || !image.imageUrl.startsWith("/")) {
+         let imageUrl = image.imageUrl || image;
+
+        if (!imageUrl || !imageUrl.startsWith("/")) {
           return null;
         }
-
-        let imageUrl = image.imageUrl;
 
         // If imageUrl starts with "/products", add "/uploads" prefix
         if (imageUrl.startsWith("/products")) {

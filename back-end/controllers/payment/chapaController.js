@@ -154,7 +154,8 @@ exports.verifyPayment = async (req, res) => {
               id: order.id,
               status: order.status,
               paymentStatus: order.paymentStatus,
-              total: order.total
+              total: order.total,
+              data : paymentData
             }
           });
         } else if (paymentData.status === 'pending') {

@@ -104,16 +104,16 @@ const AdminApp = () => {
               create={ProductCreate}
               icon={ProductIcon}
             />
-            <Resource
+            {/* <Resource
               name="orders"
               list={ManagerOrderList}
               icon={OrderIcon}
-            />
-            <Resource
+            /> */}
+            {/* <Resource
               name="inquiries"
               list={InquiryList}
               icon={InquiryIcon}
-            />
+            /> */}
             <Resource name="reviews" icon={ReviewIcon} />
           </>
         );
