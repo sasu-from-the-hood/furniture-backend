@@ -1,13 +1,14 @@
 const regx = {
-  letter: /[a-zA-Z]/g,
-  number: /[0-9]/g,
-  lowercase: /[a-z]/g,
-  uppercase: /[A-Z]/g,
-  phone: /[0-9]/g,
-  id: /[0-9/0-9]/g,
-};
+  "letter": /[a-zA-Z ]/g,  // Updated to include space
+  "number": /[0-9]/g,
+  "lowercase": /[a-z]/g,
+  "uppercase": /[A-Z]/g,
+  "phone": /[0-9]/g,
+  "id": /[0-9/0-9]/g
+}
 
-const InputValidation = (value, type) => {
+const InputValidation = (value, type, line = 0) => {
+  // Special handling for phone numbers
   if (type === "phone") {
     // Extract only digits
     let numericValue = value.match(/[0-9]/g)
@@ -38,7 +39,14 @@ const InputValidation = (value, type) => {
 
   // Handle other types
   const getRex = regx[type];
-  return value.match(getRex) ? value.match(getRex).join("") : "";
-};
+  let result = value.match(getRex) ? value.match(getRex).join('') : "";
+  
+  // Apply character limit if line parameter is greater than 0
+  if (line > 0 && result.length > line) {
+    result = result.substring(0, line);
+  }
+  
+  return result;
+}
 
 export default InputValidation;

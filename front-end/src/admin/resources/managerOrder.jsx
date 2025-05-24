@@ -8,8 +8,10 @@ import {
   useRecordContext,
   useNotify,
   useRefresh,
+  useListContext,
+  useGetList,
 } from 'react-admin';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 
 // Status options with colors
 const STATUS_OPTIONS = [
@@ -98,7 +100,7 @@ const StatusDropdown = () => {
   return (
     <div className="relative">
       {isUpdating && (
-        <div className="absolute inset-0 flex items-center justify-center bg-white bg-opacity-70 z-10">
+        <div className="absolute inset-0 flex items-center justify-center bg-opacity-70 z-10">
           <div className="w-4 h-4 border-2 border-t-transparent border-blue-500 rounded-full animate-spin"></div>
         </div>
       )}
@@ -152,16 +154,105 @@ const StatusField = () => {
   );
 };
 
-export const ManagerOrderList = (props) => (
-  <List {...props} sort={{ field: 'createdAt', order: 'DESC' }}>
-    <Datagrid>
-      <TextField source="id" />
-      <ReferenceField source="userId" reference="users">
-        <TextField source="name" />
-      </ReferenceField>
-      <StatusField source="status" label="Status" />
-      <DateField source="createdAt" />
-      <NumberField source="total" options={{ style: 'currency', currency: 'ETB' }} />
-    </Datagrid>
-  </List>
-);
+// Custom List component with search functionality
+export const ManagerOrderList = (props) => {
+  const [searchTerm, setSearchTerm] = useState('');
+  
+  const OrderList = () => {
+    const { data, isLoading } = useListContext();
+    const [filteredData, setFilteredData] = useState([]);
+    const [userMap, setUserMap] = useState({});
+    
+    // Get all users to build a map of userId to user name
+    const { data: users, isLoading: isLoadingUsers } = useGetList(
+      'users',
+      { pagination: { page: 1, perPage: 1000 } }
+    );
+    
+    // Build a map of userId to user name when users data is loaded
+    useEffect(() => {
+      if (users) {
+        const map = {};
+        users.forEach(user => {
+          map[user.id] = user.name;
+        });
+        setUserMap(map);
+      }
+    }, [users]);
+    
+    // Filter the data based on the search term and user map
+    useEffect(() => {
+      if (!data || isLoadingUsers) return;
+      
+      if (searchTerm.trim() === '') {
+        setFilteredData(Object.values(data));
+        return;
+      }
+      
+      const filtered = Object.values(data).filter(record => {
+        const userName = userMap[record.userId] || '';
+        return userName.toLowerCase().includes(searchTerm.toLowerCase());
+      });
+      
+      setFilteredData(filtered);
+    }, [data, searchTerm, userMap, isLoadingUsers]);
+    
+    if (isLoading || isLoadingUsers) return <div>Loading...</div>;
+    
+    return (
+      <Datagrid data={filteredData}>
+        <ReferenceField source="userId" reference="users">
+          <TextField source="name" />
+        </ReferenceField>
+        <StatusField source="status" label="Status" />
+        <DateField source="createdAt" />
+        <NumberField source="total" options={{ style: 'currency', currency: 'ETB' }} />
+      </Datagrid>
+    );
+  };
+
+  return (
+    <div>
+      <div style={{ 
+        padding: '16px', 
+        backgroundColor: '', 
+        borderBottom: '1px solid #e5e7eb',
+        display: 'flex',
+        alignItems: 'center'
+      }}>
+        <input
+          type="text"
+          placeholder="Search by user name..."
+          value={searchTerm}
+          onChange={(e) => setSearchTerm(e.target.value)}
+          style={{
+            padding: '8px 12px',
+            border: '1px solid #d1d5db',
+            borderRadius: '4px',
+            width: '300px',
+            fontSize: '14px'
+          }}
+        />
+        {searchTerm && (
+          <button 
+            onClick={() => setSearchTerm('')}
+            style={{
+              marginLeft: '8px',
+              padding: '6px 12px',
+              backgroundColor: '',
+              border: 'none',
+              borderRadius: '4px',
+              cursor: 'pointer'
+            }}
+          >
+            Clear
+          </button>
+        )}
+      </div>
+      
+      <List {...props} sort={{ field: 'createdAt', order: 'DESC' }}>
+        <OrderList />
+      </List>
+    </div>
+  );
+};

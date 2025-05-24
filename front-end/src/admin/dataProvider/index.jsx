@@ -353,7 +353,12 @@ export const dataProvider = (role = 'Super Admin') => ({
         // Multiple files
         params.data.file.forEach((fileItem) => {
           if (fileItem) {
+            if(fileItem.src){
+              formData.append('images', fileItem.src)
+            }
+            else{
             formData.append('files', fileItem); // Use 'files' for multiple file uploads
+            }
           }
         });
         console.log(Object.fromEntries(formData))
