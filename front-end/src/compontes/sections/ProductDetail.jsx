@@ -191,12 +191,10 @@ function ProductDetail() {
     description: (
       <div className="">
         <p className="text-gray-700">
-          {productData.longDesc}
-          <br />A sleek, minimalist chair designed for contemporary spaces,
-          combining clean lines with ergonomic comfort. Crafted with a durable
-          metal frame and a soft, cushioned seat, it's perfect for a modern home
-          office or dining area. Available in neutral tones to complement any
-          décor.
+          {productData.shortDesc} .
+          <br />
+
+           {productData.longDesc}
         </p>
       </div>
     ),
@@ -307,11 +305,9 @@ function ProductDetail() {
           {/* Dynamic product review here */}
           <div className="flex items-center text-gray-600 gap-4 lg:ml-12 sm:ml-0 py-4">
             {/* average rating */}
-            <h1 className="text-2xl bg-gray-300 rounded-xl p-2">
-              {isNaN(reviewStats.averageRating)
-                ? "0.0"
-                : reviewStats.averageRating}{" "}
-            </h1>
+
+            <h1 className="text-2xl bg-gray-300 rounded-xl p-2">{!isNaN(reviewStats.averageRating)   ? reviewStats.averageRating  : "0.0"}</h1>
+
             {/* dynamic review stars */}
             <div>
               <div className="text-xl text-yellow-500">
