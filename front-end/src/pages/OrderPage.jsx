@@ -10,15 +10,14 @@ function OrderPage() {
   const { username, userEmail, checkout } = useContext(ShopContext);
   const navigate = useNavigate();
 
-  // Get selected cart items from localStorage
   const [selectedCartItems, setSelectedCartItems] = useState([]);
+  const [phoneError, setPhoneError] = useState("");
 
   useEffect(() => {
     const items = JSON.parse(localStorage.getItem("selectedCartItems")) || [];
     setSelectedCartItems(items);
   }, []);
 
-  // Split the username into first and last name if possible
   const nameParts = username ? username.split(" ") : ["", ""];
   const firstName = nameParts[0] || "";
   const lastName = nameParts.length > 1 ? nameParts.slice(1).join(" ") : "";
@@ -35,9 +34,13 @@ function OrderPage() {
     const name = event.target.name;
     let value = event.target.value;
 
-    // Apply validation
     if (name === "phone") {
       value = InputValidation(value, "phone");
+      if (value.length !== 10) {
+        setPhoneError("Phone number must be exactly 10 digits.");
+      } else {
+        setPhoneError("");
+      }
     } else if (name === "city") {
       value = InputValidation(value, "letter");
     }
@@ -53,9 +56,8 @@ function OrderPage() {
       return;
     }
 
-    // ✅ Enforce phone number to be exactly 10 digits
     if (formData.phone.length !== 10) {
-      toast.error("Phone number must be exactly 10 digits.");
+      setPhoneError("Phone number must be exactly 10 digits.");
       return;
     }
 
@@ -105,6 +107,9 @@ function OrderPage() {
               type="tel"
               required
             />
+            {phoneError && (
+              <p className="text-red-600 text-sm ml-2 mt-1">{phoneError}</p>
+            )}
           </div>
         </div>
 
