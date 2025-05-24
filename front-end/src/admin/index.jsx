@@ -129,7 +129,7 @@ const AdminApp = () => {
             />
             <Resource
               name="orders"
-              list={OrderList}
+              list={ManagerOrderList}
               icon={OrderIcon}
             />
             <Resource name="invoices" icon={InvoiceIcon} />

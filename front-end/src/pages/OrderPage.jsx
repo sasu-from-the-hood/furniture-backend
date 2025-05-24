@@ -120,6 +120,8 @@ function OrderPage() {
               onChange={onChangeHandler}
               name="phone"
               value={formData.phone}
+              minLength={10}
+              maxLength={14}
               placeholder="Phone Number"
               className="border m-2 p-1 rounded-md"
               type="tel"
