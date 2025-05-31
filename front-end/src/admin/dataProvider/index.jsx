@@ -1,6 +1,6 @@
-import { fetchUtils } from 'react-admin';
-import { stringify } from 'query-string';
-import { API_URL } from '../../config';
+import { fetchUtils } from "react-admin";
+import { stringify } from "query-string";
+import { API_URL } from "../../config";
 
 const apiUrl = API_URL;
 const httpClient = fetchUtils.fetchJson;
@@ -10,39 +10,40 @@ const getEndpoint = (resource, role) => {
   // Default endpoints for different roles
   const endpoints = {
     superAdmin: {
-      products: '/superadmin/products',
-      categories: '/superadmin/categories',
-      orders: '/superadmin/orders',
-      users: '/superadmin/users',
-      settings: '/superadmin/settings',
-      analytics: '/superadmin/analytics',
-      inquiries: '/superadmin/inquiries',
-      dashboard: '/superadmin/dashboard',
+      products: "/superadmin/products",
+      categories: "/superadmin/categories",
+      orders: "/superadmin/orders",
+      users: "/superadmin/users",
+      settings: "/superadmin/settings",
+      analytics: "/superadmin/analytics",
+      inquiries: "/superadmin/inquiries",
+      dashboard: "/superadmin/dashboard",
     },
     admin: {
-      products: '/superadmin/products',
-      categories: '/manager/categories',
-      reviews: '/manager/reviews',
-      orders: '/superadmin/orders',
-      inquiries: '/superadmin/inquiries',
-      dashboard: '/superadmin/dashboard',
-      users: '/superadmin/users',
+      products: "/superadmin/products",
+      categories: "/manager/categories",
+      reviews: "/manager/reviews",
+      orders: "/superadmin/orders",
+      inquiries: "/superadmin/inquiries",
+      dashboard: "/superadmin/dashboard",
+      users: "/superadmin/users",
     },
     salesAdmin: {
-      orders: '/sales/orders',
-      invoices: '/sales/invoices',
-      customers: '/sales/customers',
-      dashboard: '/superadmin/dashboard',
-      users: '/superadmin/users',
+      orders: "/sales/orders",
+      invoices: "/sales/invoices",
+      customers: "/sales/customers",
+      dashboard: "/superadmin/dashboard",
+      users: "/superadmin/users",
+      inquiries: "/superadmin/inquiries",
     },
   };
 
   // Get the endpoint based on the user role
-  if (role === 'Super Admin' && endpoints.superAdmin[resource]) {
+  if (role === "Super Admin" && endpoints.superAdmin[resource]) {
     return endpoints.superAdmin[resource];
-  } else if (role === 'Product Manager' && endpoints.admin[resource]) {
+  } else if (role === "Product Manager" && endpoints.admin[resource]) {
     return endpoints.admin[resource];
-  } else if (role === 'Sales Admin' && endpoints.salesAdmin[resource]) {
+  } else if (role === "Sales Admin" && endpoints.salesAdmin[resource]) {
     return endpoints.salesAdmin[resource];
   }
 
@@ -50,7 +51,7 @@ const getEndpoint = (resource, role) => {
   return `/${resource}`;
 };
 
-export const dataProvider = (role = 'Super Admin') => ({
+export const dataProvider = (role = "Super Admin") => ({
   getList: (resource, params) => {
     const { page, perPage } = params.pagination;
     const { field, order } = params.sort;
@@ -69,7 +70,7 @@ export const dataProvider = (role = 'Super Admin') => ({
 
     return httpClient(url, {
       headers: new Headers({
-        Authorization: `Bearer ${localStorage.getItem('token')}`,
+        Authorization: `Bearer ${localStorage.getItem("token")}`,
       }),
     }).then(({ json }) => {
       // Handle different response formats
@@ -77,19 +78,23 @@ export const dataProvider = (role = 'Super Admin') => ({
       let total = 0;
 
       // Handle users endpoint specifically
-      if (resource === 'users' && json.data) {
+      if (resource === "users" && json.data) {
         data = json.data;
         total = json.total || 0;
       }
       // Handle inquiries endpoint specifically
-      else if (resource === 'inquiries' && json.inquiries) {
+      else if (resource === "inquiries" && json.inquiries) {
         data = json.inquiries;
-        total = json.pagination ? json.pagination.total : (json.total || json.count || json.inquiries.length);
+        total = json.pagination
+          ? json.pagination.total
+          : json.total || json.count || json.inquiries.length;
       }
       // Handle other endpoints
       else {
         data = json[resource] || json.rows || json.data || json;
-        total = json.pagination ? json.pagination.total : (json.total || json.count || json.length);
+        total = json.pagination
+          ? json.pagination.total
+          : json.total || json.count || json.length;
       }
 
       return {
@@ -104,26 +109,26 @@ export const dataProvider = (role = 'Super Admin') => ({
 
     return httpClient(`${apiUrl}${endpoint}/${params.id}`, {
       headers: new Headers({
-        Authorization: `Bearer ${localStorage.getItem('token')}`,
+        Authorization: `Bearer ${localStorage.getItem("token")}`,
       }),
     }).then(({ json }) => {
       // Handle inquiries specifically
-      if (resource === 'inquiries' && json.inquiry) {
+      if (resource === "inquiries" && json.inquiry) {
         return { data: json.inquiry };
       }
 
       // Handle products with images
-      if (resource === 'products') {
+      if (resource === "products") {
         const product = json.product || json;
 
         // Transform images for react-admin ImageInput/ImageField
         if (product && product.images && Array.isArray(product.images)) {
           // Create a file array for the ImageInput component
-          const transformedImages = product.images.map(image => ({
+          const transformedImages = product.images.map((image) => ({
             id: image.id,
             src: image.imageUrl, // Use imageUrl as src for ImageField
-            title: image.altText || image.title || 'Product Image', // Use altText or title for the title
-            rawFile: null // No rawFile for existing images
+            title: image.altText || image.title || "Product Image", // Use altText or title for the title
+            rawFile: null, // No rawFile for existing images
           }));
 
           // Replace the images array with the transformed one
@@ -144,16 +149,16 @@ export const dataProvider = (role = 'Super Admin') => ({
     const endpoint = getEndpoint(resource, role);
 
     // Special handling for users resource
-    if (resource === 'users') {
+    if (resource === "users") {
       const query = {
-        ids: params.ids.join(','),
+        ids: params.ids.join(","),
       };
 
       const url = `${apiUrl}${endpoint}/many?${stringify(query)}`;
 
       return httpClient(url, {
         headers: new Headers({
-          Authorization: `Bearer ${localStorage.getItem('token')}`,
+          Authorization: `Bearer ${localStorage.getItem("token")}`,
         }),
       }).then(({ json }) => ({
         data: json,
@@ -161,12 +166,12 @@ export const dataProvider = (role = 'Super Admin') => ({
     }
 
     // Special handling for products resource
-    if (resource === 'products') {
+    if (resource === "products") {
       // Make individual requests for each product
-      const promises = params.ids.map(id =>
+      const promises = params.ids.map((id) =>
         httpClient(`${apiUrl}${endpoint}/${id}`, {
           headers: new Headers({
-            Authorization: `Bearer ${localStorage.getItem('token')}`,
+            Authorization: `Bearer ${localStorage.getItem("token")}`,
           }),
         }).then(({ json }) => {
           // Ensure each item has an id
@@ -178,11 +183,11 @@ export const dataProvider = (role = 'Super Admin') => ({
           // Transform images for react-admin ImageInput/ImageField
           if (product && product.images && Array.isArray(product.images)) {
             // Create a file array for the ImageInput component
-            const transformedImages = product.images.map(image => ({
+            const transformedImages = product.images.map((image) => ({
               id: image.id,
               src: image.imageUrl, // Use imageUrl as src for ImageField
-              title: image.altText || image.title || 'Product Image', // Use altText or title for the title
-              rawFile: null // No rawFile for existing images
+              title: image.altText || image.title || "Product Image", // Use altText or title for the title
+              rawFile: null, // No rawFile for existing images
             }));
 
             // Replace the images array with the transformed one
@@ -193,7 +198,7 @@ export const dataProvider = (role = 'Super Admin') => ({
         })
       );
 
-      return Promise.all(promises).then(results => ({
+      return Promise.all(promises).then((results) => ({
         data: results,
       }));
     }
@@ -203,7 +208,7 @@ export const dataProvider = (role = 'Super Admin') => ({
 
     return httpClient(url, {
       headers: new Headers({
-        Authorization: `Bearer ${localStorage.getItem('token')}`,
+        Authorization: `Bearer ${localStorage.getItem("token")}`,
       }),
     }).then(({ json }) => {
       // If the response already has a data property that's an array, use it
@@ -225,7 +230,7 @@ export const dataProvider = (role = 'Super Admin') => ({
       const result = Array.isArray(json) ? json : [json];
 
       // Ensure each item has an id
-      result.forEach(item => {
+      result.forEach((item) => {
         if (!item.id && params.ids.length === 1) {
           item.id = params.ids[0];
         }
@@ -254,7 +259,7 @@ export const dataProvider = (role = 'Super Admin') => ({
 
     return httpClient(url, {
       headers: new Headers({
-        Authorization: `Bearer ${localStorage.getItem('token')}`,
+        Authorization: `Bearer ${localStorage.getItem("token")}`,
       }),
     }).then(({ json }) => {
       // Handle different response formats
@@ -262,19 +267,23 @@ export const dataProvider = (role = 'Super Admin') => ({
       let total = 0;
 
       // Handle users endpoint specifically
-      if (resource === 'users' && json.data) {
+      if (resource === "users" && json.data) {
         data = json.data;
         total = json.total || 0;
       }
       // Handle inquiries endpoint specifically
-      else if (resource === 'inquiries' && json.inquiries) {
+      else if (resource === "inquiries" && json.inquiries) {
         data = json.inquiries;
-        total = json.pagination ? json.pagination.total : (json.total || json.count || json.inquiries.length);
+        total = json.pagination
+          ? json.pagination.total
+          : json.total || json.count || json.inquiries.length;
       }
       // Handle other endpoints
       else {
         data = json[resource] || json.rows || json.data || json;
-        total = json.pagination ? json.pagination.total : (json.total || json.count || json.length);
+        total = json.pagination
+          ? json.pagination.total
+          : json.total || json.count || json.length;
       }
 
       return {
@@ -297,46 +306,52 @@ export const dataProvider = (role = 'Super Admin') => ({
         // Multiple files
         params.data.file.forEach((fileItem) => {
           if (fileItem) {
-            formData.append('files', fileItem); // Use 'files' for multiple file uploads
+            formData.append("files", fileItem); // Use 'files' for multiple file uploads
           }
         });
       } else if (params.data.file.rawFile) {
         // Single file
-        formData.append('file', params.data.file);
+        formData.append("file", params.data.file);
       }
 
       // Add other data fields
-      Object.keys(params.data).forEach(key => {
-        if (key !== 'file') {
+      Object.keys(params.data).forEach((key) => {
+        if (key !== "file") {
           formData.append(key, params.data[key]);
         }
       });
 
       // Use fetch directly to handle FormData
       return fetch(`${apiUrl}${endpoint}`, {
-        method: 'POST',
+        method: "POST",
         body: formData,
         headers: new Headers({
-          Authorization: `Bearer ${localStorage.getItem('token')}`,
+          Authorization: `Bearer ${localStorage.getItem("token")}`,
           // Don't set Content-Type, let the browser set it with the boundary
         }),
       })
-        .then(response => response.json())
-        .then(json => ({
-          data: { ...params.data, id: json.id || json.product?.id || json[resource.slice(0, -1)]?.id },
+        .then((response) => response.json())
+        .then((json) => ({
+          data: {
+            ...params.data,
+            id: json.id || json.product?.id || json[resource.slice(0, -1)]?.id,
+          },
         }));
     }
 
     // Regular JSON request if no file
     return httpClient(`${apiUrl}${endpoint}`, {
-      method: 'POST',
+      method: "POST",
       body: JSON.stringify(params.data),
       headers: new Headers({
-        'Content-Type': 'application/json',
-        Authorization: `Bearer ${localStorage.getItem('token')}`,
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${localStorage.getItem("token")}`,
       }),
     }).then(({ json }) => ({
-      data: { ...params.data, id: json.id || json.product?.id || json[resource.slice(0, -1)]?.id },
+      data: {
+        ...params.data,
+        id: json.id || json.product?.id || json[resource.slice(0, -1)]?.id,
+      },
     }));
   },
 
@@ -353,43 +368,42 @@ export const dataProvider = (role = 'Super Admin') => ({
         // Multiple files
         params.data.file.forEach((fileItem) => {
           if (fileItem) {
-            if(fileItem.src){
-              formData.append('images', fileItem.src)
-            }
-            else{
-            formData.append('files', fileItem); // Use 'files' for multiple file uploads
+            if (fileItem.src) {
+              formData.append("images", fileItem.src);
+            } else {
+              formData.append("files", fileItem); // Use 'files' for multiple file uploads
             }
           }
         });
-        console.log(Object.fromEntries(formData))
-
+        console.log(Object.fromEntries(formData));
       } else if (params.data.file.rawFile) {
         // Single file
-        formData.append('file', params.data.file);
+        formData.append("file", params.data.file);
       }
 
       // Add other data fields
-      Object.keys(params.data).forEach(key => {
-        if (key !== 'file') {
+      Object.keys(params.data).forEach((key) => {
+        if (key !== "file") {
           formData.append(key, params.data[key]);
         }
       });
 
-      console.log(Object.fromEntries(formData))
+      console.log(Object.fromEntries(formData));
 
       // Use fetch directly to handle FormData
       return fetch(`${apiUrl}${endpoint}/${params.id}`, {
-        method: 'PUT',
+        method: "PUT",
         body: formData,
         headers: new Headers({
-          Authorization: `Bearer ${localStorage.getItem('token')}`,
+          Authorization: `Bearer ${localStorage.getItem("token")}`,
           // Don't set Content-Type, let the browser set it with the boundary
         }),
       })
-        .then(response => response.json())
-        .then(json => {
+        .then((response) => response.json())
+        .then((json) => {
           // Ensure the response has an id field
-          const responseData = json.product || json[resource.slice(0, -1)] || json;
+          const responseData =
+            json.product || json[resource.slice(0, -1)] || json;
 
           // If the data doesn't have an id but json has one, use that
           if (responseData && !responseData.id && json.id) {
@@ -409,11 +423,11 @@ export const dataProvider = (role = 'Super Admin') => ({
 
     // Regular JSON request if no file
     return httpClient(`${apiUrl}${endpoint}/${params.id}`, {
-      method: 'PUT',
+      method: "PUT",
       body: JSON.stringify(params.data),
       headers: new Headers({
-        'Content-Type': 'application/json',
-        Authorization: `Bearer ${localStorage.getItem('token')}`,
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${localStorage.getItem("token")}`,
       }),
     }).then(({ json }) => {
       // Ensure the response has an id field
@@ -439,15 +453,15 @@ export const dataProvider = (role = 'Super Admin') => ({
     const endpoint = getEndpoint(resource, role);
 
     const query = {
-      ids: params.ids.join(','),
+      ids: params.ids.join(","),
     };
 
     return httpClient(`${apiUrl}${endpoint}?${stringify(query)}`, {
-      method: 'PUT',
+      method: "PUT",
       body: JSON.stringify(params.data),
       headers: new Headers({
-        'Content-Type': 'application/json',
-        Authorization: `Bearer ${localStorage.getItem('token')}`,
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${localStorage.getItem("token")}`,
       }),
     }).then(({ json }) => ({
       data: json,
@@ -458,9 +472,9 @@ export const dataProvider = (role = 'Super Admin') => ({
     const endpoint = getEndpoint(resource, role);
 
     return httpClient(`${apiUrl}${endpoint}/${params.id}`, {
-      method: 'DELETE',
+      method: "DELETE",
       headers: new Headers({
-        Authorization: `Bearer ${localStorage.getItem('token')}`,
+        Authorization: `Bearer ${localStorage.getItem("token")}`,
       }),
     }).then(({ json }) => ({
       data: json,
@@ -471,13 +485,13 @@ export const dataProvider = (role = 'Super Admin') => ({
     const endpoint = getEndpoint(resource, role);
 
     const query = {
-      ids: params.ids.join(','),
+      ids: params.ids.join(","),
     };
 
     return httpClient(`${apiUrl}${endpoint}?${stringify(query)}`, {
-      method: 'DELETE',
+      method: "DELETE",
       headers: new Headers({
-        Authorization: `Bearer ${localStorage.getItem('token')}`,
+        Authorization: `Bearer ${localStorage.getItem("token")}`,
       }),
     }).then(({ json }) => ({
       data: json,
@@ -490,22 +504,25 @@ export const dataProvider = (role = 'Super Admin') => ({
     const endpoint = getEndpoint(resource, role);
 
     switch (type) {
-      case 'GET_DASHBOARD_SUMMARY':
+      case "GET_DASHBOARD_SUMMARY":
         // Fetch dashboard summary data
-        return httpClient(`${apiUrl}${getEndpoint('dashboard/summary', role)}`, {
-          headers: new Headers({
-            Authorization: `Bearer ${localStorage.getItem('token')}`,
-          }),
-        }).then(({ json }) => ({
+        return httpClient(
+          `${apiUrl}${getEndpoint("dashboard/summary", role)}`,
+          {
+            headers: new Headers({
+              Authorization: `Bearer ${localStorage.getItem("token")}`,
+            }),
+          }
+        ).then(({ json }) => ({
           data: json,
         }));
 
-      case 'GET_ONE':
+      case "GET_ONE":
         // Special handling for settings/basic endpoint
-        if (resource === 'settings' && payload.id === 'basic') {
+        if (resource === "settings" && payload.id === "basic") {
           return httpClient(`${apiUrl}${endpoint}/basic`, {
             headers: new Headers({
-              Authorization: `Bearer ${localStorage.getItem('token')}`,
+              Authorization: `Bearer ${localStorage.getItem("token")}`,
             }),
           }).then(({ json }) => ({
             data: json,
@@ -515,21 +532,21 @@ export const dataProvider = (role = 'Super Admin') => ({
         // Default GET_ONE behavior
         return httpClient(`${apiUrl}${endpoint}/${payload.id}`, {
           headers: new Headers({
-            Authorization: `Bearer ${localStorage.getItem('token')}`,
+            Authorization: `Bearer ${localStorage.getItem("token")}`,
           }),
         }).then(({ json }) => ({
           data: json,
         }));
 
-      case 'POST_ONE':
+      case "POST_ONE":
         // Special handling for settings/basic endpoint
-        if (resource === 'settings' && payload.id === 'basic') {
+        if (resource === "settings" && payload.id === "basic") {
           return httpClient(`${apiUrl}${endpoint}/basic`, {
-            method: 'POST',
+            method: "POST",
             body: JSON.stringify(payload.data),
             headers: new Headers({
-              'Content-Type': 'application/json',
-              Authorization: `Bearer ${localStorage.getItem('token')}`,
+              "Content-Type": "application/json",
+              Authorization: `Bearer ${localStorage.getItem("token")}`,
             }),
           }).then(({ json }) => ({
             data: json,
@@ -538,11 +555,11 @@ export const dataProvider = (role = 'Super Admin') => ({
 
         // Default POST_ONE behavior
         return httpClient(`${apiUrl}${endpoint}/${payload.id}`, {
-          method: 'POST',
+          method: "POST",
           body: JSON.stringify(payload.data),
           headers: new Headers({
-            'Content-Type': 'application/json',
-            Authorization: `Bearer ${localStorage.getItem('token')}`,
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${localStorage.getItem("token")}`,
           }),
         }).then(({ json }) => ({
           data: json,
@@ -555,9 +572,9 @@ export const dataProvider = (role = 'Super Admin') => ({
 
   // Custom method to fetch dashboard data
   getDashboardSummary: () => {
-    return httpClient(`${apiUrl}${getEndpoint('dashboard/summary', role)}`, {
+    return httpClient(`${apiUrl}${getEndpoint("dashboard/summary", role)}`, {
       headers: new Headers({
-        Authorization: `Bearer ${localStorage.getItem('token')}`,
+        Authorization: `Bearer ${localStorage.getItem("token")}`,
       }),
     }).then(({ json }) => json);
   },

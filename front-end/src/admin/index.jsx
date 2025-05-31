@@ -1,20 +1,28 @@
-import React, { useContext, useMemo } from 'react';
-import { Admin, Resource } from 'react-admin';
-import { ShopContext } from '../compontes/context/ShopContext';
-import { dataProvider } from './dataProvider/index.jsx';
+import React, { useContext, useMemo } from "react";
+import { Admin, Resource } from "react-admin";
+import { ShopContext } from "../compontes/context/ShopContext";
+import { dataProvider } from "./dataProvider/index.jsx";
 
 // Import resources
-import { ProductList, ProductEdit, ProductCreate } from './resources/products.jsx';
-import { CategoryList, CategoryEdit, CategoryCreate } from './resources/categories.jsx';
-import { OrderList } from './resources/orders.jsx';
-import { ManagerOrderList } from './resources/managerOrder.jsx';
-import { UserList, UserEdit, UserCreate } from './resources/users.jsx';
-import { InquiryList } from './resources/inquiries.jsx';
-import HomeRedirect from './resources/home.jsx';
+import {
+  ProductList,
+  ProductEdit,
+  ProductCreate,
+} from "./resources/products.jsx";
+import {
+  CategoryList,
+  CategoryEdit,
+  CategoryCreate,
+} from "./resources/categories.jsx";
+import { OrderList } from "./resources/orders.jsx";
+import { ManagerOrderList } from "./resources/managerOrder.jsx";
+import { UserList, UserEdit, UserCreate } from "./resources/users.jsx";
+import { InquiryList } from "./resources/inquiries.jsx";
+import HomeRedirect from "./resources/home.jsx";
 // Import pages
-import Dashboard from './pages/Dashboard.jsx';
-import NotFound from './pages/NotFound.jsx';
-import SiteSettingsPage from './resources/settings.jsx';
+import Dashboard from "./pages/Dashboard.jsx";
+import NotFound from "./pages/NotFound.jsx";
+import SiteSettingsPage from "./resources/settings.jsx";
 
 // Import icons
 import {
@@ -28,7 +36,7 @@ import {
   Star as ReviewIcon,
   Assessment as AnalyticsIcon,
   Home as HomeIcon,
-} from '@mui/icons-material';
+} from "@mui/icons-material";
 
 const AdminApp = () => {
   const { userRole, token } = useContext(ShopContext);
@@ -39,14 +47,14 @@ const AdminApp = () => {
   // Define resources based on user role
   const getResources = () => {
     switch (userRole) {
-      case 'Super Admin':
+      case "Super Admin":
         return (
           <>
             <Resource
               name="home"
               list={HomeRedirect}
               icon={HomeIcon}
-              options={{ label: 'Go to Home' }}
+              options={{ label: "Go to Home" }}
             />
             <Resource
               name="products"
@@ -62,11 +70,7 @@ const AdminApp = () => {
               create={CategoryCreate}
               icon={CategoryIcon}
             />
-            <Resource
-              name="orders"
-              list={OrderList}
-              icon={OrderIcon}
-            />
+            <Resource name="orders" list={OrderList} icon={OrderIcon} />
             <Resource
               name="users"
               list={UserList}
@@ -79,23 +83,19 @@ const AdminApp = () => {
               list={SiteSettingsPage}
               icon={SettingIcon}
             />
-            <Resource
-              name="inquiries"
-              list={InquiryList}
-              icon={InquiryIcon}
-            />
+            <Resource name="inquiries" list={InquiryList} icon={InquiryIcon} />
             <Resource name="analytics" icon={AnalyticsIcon} />
           </>
         );
 
-      case 'Product Manager':
+      case "Product Manager":
         return (
           <>
-          <Resource
+            <Resource
               name="home"
               list={HomeRedirect}
               icon={HomeIcon}
-              options={{ label: 'Go to Home' }}
+              options={{ label: "Go to Home" }}
             />
             <Resource
               name="products"
@@ -118,20 +118,17 @@ const AdminApp = () => {
           </>
         );
 
-      case 'Sales Admin':
+      case "Sales Admin":
         return (
           <>
-          <Resource
+            <Resource
               name="home"
               list={HomeRedirect}
               icon={HomeIcon}
-              options={{ label: 'Go to Home' }}
+              options={{ label: "Go to Home" }}
             />
-            <Resource
-              name="orders"
-              list={ManagerOrderList}
-              icon={OrderIcon}
-            />
+            <Resource name="orders" list={ManagerOrderList} icon={OrderIcon} />
+            <Resource name="inquiries" list={InquiryList} icon={InquiryIcon} />
             <Resource name="invoices" icon={InvoiceIcon} />
             <Resource name="customers" icon={UserIcon} />
           </>
@@ -142,7 +139,10 @@ const AdminApp = () => {
     }
   };
 
-  if (!token || !['Super Admin', 'Product Manager', 'Sales Admin'].includes(userRole)) {
+  if (
+    !token ||
+    !["Super Admin", "Product Manager", "Sales Admin"].includes(userRole)
+  ) {
     return (
       <div className="p-8">
         <h1 className="text-2xl font-bold mb-4">Access Denied</h1>
