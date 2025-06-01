@@ -37,6 +37,7 @@ import {
   Assessment as AnalyticsIcon,
   Home as HomeIcon,
 } from "@mui/icons-material";
+import AnalyticsPage from "./resources/analtics.jsx";
 
 const AdminApp = () => {
   const { userRole, token } = useContext(ShopContext);
@@ -84,7 +85,7 @@ const AdminApp = () => {
               icon={SettingIcon}
             />
             <Resource name="inquiries" list={InquiryList} icon={InquiryIcon} />
-            <Resource name="analytics" icon={AnalyticsIcon} />
+            <Resource name="analytics" icon={AnalyticsIcon}  list={AnalyticsPage} />
           </>
         );
 

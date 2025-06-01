@@ -41,6 +41,12 @@ module.exports = (sequelize, DataTypes) => {
         as: 'wishlistedBy',
         foreignKey: 'productId'
       });
+
+      // Product has many OrderProducts
+      Product.hasMany(models.OrderProduct, {
+        foreignKey: 'productId',
+        as: 'orderProducts'
+      });
     }
   }
 

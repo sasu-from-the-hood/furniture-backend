@@ -49,30 +49,30 @@ const SuperAdminDashboard = () => {
     fetchDashboardData();
   }, [dataProvider, notify]);
 
-  // Dashboard cards data
+  // Dashboard cards data - now using dynamic values from API
   const cards = [
     {
       title: 'Users',
       icon: <PeopleIcon fontSize="large" />,
-      value: 6, // Fixed value as requested
+      value: dashboardData.counts?.users || 0,
       link: '/users',
     },
     {
       title: 'Products',
       icon: <InventoryIcon fontSize="large" />,
-      value: 3, // Fixed value as requested
+      value: dashboardData.counts?.products || 0,
       link: '/products',
     },
     {
       title: 'Orders',
       icon: <ShoppingCartIcon fontSize="large" />,
-      value: 0, // Fixed value as requested
+      value: dashboardData.counts?.orders || 0,
       link: '/orders',
     },
     {
       title: 'Categories',
       icon: <CategoryIcon fontSize="large" />,
-      value: 5, // Fixed value as requested
+      value: dashboardData.counts?.categories || 0,
       link: '/categories',
     },
   ];
@@ -136,7 +136,11 @@ const SuperAdminDashboard = () => {
                   }}
                 />
                 <CardContent sx={{ flexGrow: 1, p: { xs: 1, sm: 2 }, width: '100%' }}>
-                  {card.value !== undefined && (
+                  {loading ? (
+                    <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
+                      <CircularProgress size={24} />
+                    </Box>
+                  ) : (
                     <Typography
                       variant="h3"
                       component="div"
