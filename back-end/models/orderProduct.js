@@ -4,7 +4,17 @@ const { Model } = require('sequelize');
 module.exports = (sequelize, DataTypes) => {
   class OrderProduct extends Model {
     static associate(models) {
-      // No direct associations as this is a junction table
+      // OrderProduct belongs to Order
+      OrderProduct.belongsTo(models.Order, {
+        foreignKey: 'orderId',
+        as: 'order'
+      });
+
+      // OrderProduct belongs to Product
+      OrderProduct.belongsTo(models.Product, {
+        foreignKey: 'productId',
+        as: 'product'
+      });
     }
   }
 

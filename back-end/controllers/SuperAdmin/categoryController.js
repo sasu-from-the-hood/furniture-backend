@@ -226,13 +226,13 @@ exports.deleteCategory = async (req, res) => {
     }
     
     // Check if category has subcategories
-    if (category.subcategories && category.subcategories.length > 0) {
-      await transaction.rollback();
-      return res.status(400).json({ 
-        message: 'Cannot delete category with subcategories',
-        subcategoryCount: category.subcategories.length
-      });
-    }
+    // if (category.subcategories && category.subcategories.length > 0) {
+    //   await transaction.rollback();
+    //   return res.status(400).json({ 
+    //     message: 'Cannot delete category with subcategories',
+    //     subcategoryCount: category.subcategories.length
+    //   });
+    // }
     
     await category.destroy({ transaction });
     

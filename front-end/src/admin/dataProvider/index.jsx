@@ -18,6 +18,11 @@ const getEndpoint = (resource, role) => {
       analytics: "/superadmin/analytics",
       inquiries: "/superadmin/inquiries",
       dashboard: "/superadmin/dashboard",
+            // Analytics specific endpoints
+      "analytics/dashboard": "/superadmin/analytics/dashboard",
+      "analytics/sales": "/superadmin/analytics/sales",
+      "analytics/products": "/superadmin/analytics/products",
+      "analytics/users": "/superadmin/analytics/users"
     },
     admin: {
       products: "/superadmin/products",
@@ -305,13 +310,13 @@ export const dataProvider = (role = "Super Admin") => ({
       if (Array.isArray(params.data.file)) {
         // Multiple files
         params.data.file.forEach((fileItem) => {
-          if (fileItem) {
-            formData.append("files", fileItem); // Use 'files' for multiple file uploads
+          if (fileItem && fileItem.rawFile) {
+            formData.append("files", fileItem.rawFile); // Use 'files' for multiple file uploads
           }
         });
-      } else if (params.data.file.rawFile) {
+      } else if (params.data.file && params.data.file.rawFile) {
         // Single file
-        formData.append("file", params.data.file);
+        formData.append("file", params.data.file.rawFile);
       }
 
       // Add other data fields
@@ -368,17 +373,14 @@ export const dataProvider = (role = "Super Admin") => ({
         // Multiple files
         params.data.file.forEach((fileItem) => {
           if (fileItem) {
-            if (fileItem.src) {
-              formData.append("images", fileItem.src);
-            } else {
-              formData.append("files", fileItem); // Use 'files' for multiple file uploads
+            if (fileItem.rawFile) {
+              formData.append("files", fileItem.rawFile); // Use 'files' for multiple file uploads
             }
           }
         });
-        console.log(Object.fromEntries(formData));
-      } else if (params.data.file.rawFile) {
+      } else if (params.data.file && params.data.file.rawFile) {
         // Single file
-        formData.append("file", params.data.file);
+        formData.append("file", params.data.file.rawFile);
       }
 
       // Add other data fields
@@ -387,8 +389,6 @@ export const dataProvider = (role = "Super Admin") => ({
           formData.append(key, params.data[key]);
         }
       });
-
-      console.log(Object.fromEntries(formData));
 
       // Use fetch directly to handle FormData
       return fetch(`${apiUrl}${endpoint}/${params.id}`, {
@@ -518,9 +518,10 @@ export const dataProvider = (role = "Super Admin") => ({
         }));
 
       case "GET_ONE":
-        // Special handling for settings/basic endpoint
-        if (resource === "settings" && payload.id === "basic") {
-          return httpClient(`${apiUrl}${endpoint}/basic`, {
+        // Handle GET_ONE without an ID
+        // Check if payload exists before trying to access its properties
+        if (!payload || !payload.id) {
+          return httpClient(`${apiUrl}${endpoint}`, {
             headers: new Headers({
               Authorization: `Bearer ${localStorage.getItem("token")}`,
             }),
@@ -529,7 +530,7 @@ export const dataProvider = (role = "Super Admin") => ({
           }));
         }
 
-        // Default GET_ONE behavior
+        // Default behavior with ID
         return httpClient(`${apiUrl}${endpoint}/${payload.id}`, {
           headers: new Headers({
             Authorization: `Bearer ${localStorage.getItem("token")}`,

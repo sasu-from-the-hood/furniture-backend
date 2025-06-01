@@ -12,18 +12,20 @@ const { Op } = require('sequelize');
 
 exports.getDashboardStats = async (req, res) => {
   try {
+    console.log('Analytics dashboard endpoint called');
+
     // Get current date and date 30 days ago
     const today = new Date();
     const thirtyDaysAgo = new Date(today);
     thirtyDaysAgo.setDate(today.getDate() - 30);
-    
+
     // Total revenue
     const totalRevenue = await Order.sum('total', {
       where: {
         paymentStatus: 'paid'
       }
     }) || 0;
-    
+
     // Revenue in last 30 days
     const recentRevenue = await Order.sum('total', {
       where: {
@@ -33,10 +35,10 @@ exports.getDashboardStats = async (req, res) => {
         }
       }
     }) || 0;
-    
+
     // Total orders
     const totalOrders = await Order.count();
-    
+
     // Orders in last 30 days
     const recentOrders = await Order.count({
       where: {
@@ -45,24 +47,24 @@ exports.getDashboardStats = async (req, res) => {
         }
       }
     });
-    
+
     // Total products
     const totalProducts = await Product.count();
-    
+
     // Active products
     const activeProducts = await Product.count({
       where: {
         isActive: true
       }
     });
-    
+
     // Total users
     const totalUsers = await User.count({
       where: {
         roleId: null // Only count regular users, not admins
       }
     });
-    
+
     // New users in last 30 days
     const newUsers = await User.count({
       where: {
@@ -72,23 +74,54 @@ exports.getDashboardStats = async (req, res) => {
         }
       }
     });
-    
+
     // Total categories
     const totalCategories = await Category.count();
-    
+
     // Total inquiries
     const totalInquiries = await Inquiry.count();
-    
+
     // Pending inquiries
     const pendingInquiries = await Inquiry.count({
       where: {
         status: 'pending'
       }
     });
-    
+
     // Average order value
     const avgOrderValue = totalOrders > 0 ? totalRevenue / totalOrders : 0;
-    
+
+    // Get revenue data for the last 30 days
+    const revenueData = await Order.findAll({
+      attributes: [
+        [sequelize.fn('DATE', sequelize.col('createdAt')), 'date'],
+        [sequelize.fn('SUM', sequelize.col('total')), 'total']
+      ],
+      where: {
+        paymentStatus: 'paid',
+        createdAt: {
+          [Op.gte]: thirtyDaysAgo
+        }
+      },
+      group: [sequelize.fn('DATE', sequelize.col('createdAt'))],
+      order: [[sequelize.fn('DATE', sequelize.col('createdAt')), 'ASC']]
+    });
+
+    // Get orders data for the last 30 days
+    const ordersData = await Order.findAll({
+      attributes: [
+        [sequelize.fn('DATE', sequelize.col('createdAt')), 'date'],
+        [sequelize.fn('COUNT', sequelize.col('Order.id')), 'total']
+      ],
+      where: {
+        createdAt: {
+          [Op.gte]: thirtyDaysAgo
+        }
+      },
+      group: [sequelize.fn('DATE', sequelize.col('createdAt'))],
+      order: [[sequelize.fn('DATE', sequelize.col('createdAt')), 'ASC']]
+    });
+
     res.json({
       revenue: {
         total: totalRevenue,
@@ -111,15 +144,25 @@ exports.getDashboardStats = async (req, res) => {
         total: totalInquiries,
         pending: pendingInquiries
       },
-      avgOrderValue
+      avgOrderValue,
+      revenueData: revenueData.map(r => ({
+        date: r.get('date'),
+        total: r.get('total')
+      })),
+      ordersData: ordersData.map(o => ({
+        date: o.get('date'),
+        total: o.get('total')
+      }))
     });
   } catch (error) {
+    console.error('Error in getDashboardStats:', error);
     res.status(500).json({ message: 'Server error', error: error.message });
   }
 };
 
 exports.getSalesAnalytics = async (req, res) => {
   try {
+    console.log('Analytics sales endpoint called');
     const { startDate, endDate, groupBy = 'day' } = req.query;
     
     let dateFormat;
@@ -174,8 +217,8 @@ exports.getSalesAnalytics = async (req, res) => {
     const salesByTimePeriod = await Order.findAll({
       attributes: [
         [groupByClause, 'period'],
-        [sequelize.fn('COUNT', sequelize.col('id')), 'orderCount'],
-        [sequelize.fn('SUM', sequelize.col('total')), 'totalSales']
+        [sequelize.fn('COUNT', sequelize.col('Order.id')), 'orderCount'],
+        [sequelize.fn('SUM', sequelize.col('Order.total')), 'totalSales']
       ],
       where: whereClause,
       group: ['period'],
@@ -199,25 +242,30 @@ exports.getSalesAnalytics = async (req, res) => {
               attributes: ['id', 'name']
             }
           ]
+        },
+        {
+          model: Order,
+          as: 'order',
+          attributes: [],
+          where: {
+            paymentStatus: 'paid',
+            ...(startDate && endDate ? {
+              createdAt: {
+                [Op.between]: [new Date(startDate), new Date(endDate)]
+              }
+            } : startDate ? {
+              createdAt: {
+                [Op.gte]: new Date(startDate)
+              }
+            } : endDate ? {
+              createdAt: {
+                [Op.lte]: new Date(endDate)
+              }
+            } : {})
+          }
         }
       ],
-      where: {
-        '$Order.paymentStatus$': 'paid',
-        ...(startDate && endDate ? {
-          '$Order.createdAt$': {
-            [Op.between]: [new Date(startDate), new Date(endDate)]
-          }
-        } : startDate ? {
-          '$Order.createdAt$': {
-            [Op.gte]: new Date(startDate)
-          }
-        } : endDate ? {
-          '$Order.createdAt$': {
-            [Op.lte]: new Date(endDate)
-          }
-        } : {})
-      },
-      group: ['Product.categoryId'],
+      group: ['Product.categoryId', 'Product.category.id'],
       order: [[sequelize.fn('SUM', sequelize.col('OrderProduct.totalPrice')), 'DESC']]
     });
     
@@ -225,34 +273,39 @@ exports.getSalesAnalytics = async (req, res) => {
     const topSellingProducts = await OrderProduct.findAll({
       attributes: [
         'productId',
-        [sequelize.fn('SUM', sequelize.col('quantity')), 'totalQuantity'],
-        [sequelize.fn('SUM', sequelize.col('totalPrice')), 'totalSales']
+        [sequelize.fn('SUM', sequelize.col('OrderProduct.quantity')), 'totalQuantity'],
+        [sequelize.fn('SUM', sequelize.col('OrderProduct.totalPrice')), 'totalSales']
       ],
       include: [
         {
           model: Product,
           as: 'product',
           attributes: ['id', 'title', 'sku']
+        },
+        {
+          model: Order,
+          as: 'order',
+          attributes: [],
+          where: {
+            paymentStatus: 'paid',
+            ...(startDate && endDate ? {
+              createdAt: {
+                [Op.between]: [new Date(startDate), new Date(endDate)]
+              }
+            } : startDate ? {
+              createdAt: {
+                [Op.gte]: new Date(startDate)
+              }
+            } : endDate ? {
+              createdAt: {
+                [Op.lte]: new Date(endDate)
+              }
+            } : {})
+          }
         }
       ],
-      where: {
-        '$Order.paymentStatus$': 'paid',
-        ...(startDate && endDate ? {
-          '$Order.createdAt$': {
-            [Op.between]: [new Date(startDate), new Date(endDate)]
-          }
-        } : startDate ? {
-          '$Order.createdAt$': {
-            [Op.gte]: new Date(startDate)
-          }
-        } : endDate ? {
-          '$Order.createdAt$': {
-            [Op.lte]: new Date(endDate)
-          }
-        } : {})
-      },
-      group: ['productId'],
-      order: [[sequelize.fn('SUM', sequelize.col('quantity')), 'DESC']],
+      group: ['OrderProduct.productId', 'product.id'],
+      order: [[sequelize.fn('SUM', sequelize.col('OrderProduct.quantity')), 'DESC']],
       limit: 10
     });
     
@@ -262,12 +315,14 @@ exports.getSalesAnalytics = async (req, res) => {
       topSellingProducts
     });
   } catch (error) {
+    console.error('Error in getSalesAnalytics:', error);
     res.status(500).json({ message: 'Server error', error: error.message });
   }
 };
 
 exports.getProductAnalytics = async (req, res) => {
   try {
+    console.log('Analytics products endpoint called');
     const { startDate, endDate } = req.query;
     
     const whereClause = {};
@@ -290,7 +345,7 @@ exports.getProductAnalytics = async (req, res) => {
     const productsByCategory = await Product.findAll({
       attributes: [
         'categoryId',
-        [sequelize.fn('COUNT', sequelize.col('id')), 'productCount']
+        [sequelize.fn('COUNT', sequelize.col('Product.id')), 'productCount']
       ],
       include: [
         {
@@ -299,15 +354,15 @@ exports.getProductAnalytics = async (req, res) => {
           attributes: ['id', 'name']
         }
       ],
-      group: ['categoryId'],
-      order: [[sequelize.fn('COUNT', sequelize.col('id')), 'DESC']]
+      group: ['categoryId', 'category.id'],
+      order: [[sequelize.fn('COUNT', sequelize.col('Product.id')), 'DESC']]
     });
     
     // Products by status
     const productsByStatus = await Product.findAll({
       attributes: [
         'inStock',
-        [sequelize.fn('COUNT', sequelize.col('id')), 'productCount']
+        [sequelize.fn('COUNT', sequelize.col('Product.id')), 'productCount']
       ],
       group: ['inStock']
     });
@@ -316,7 +371,7 @@ exports.getProductAnalytics = async (req, res) => {
     const mostReviewedProducts = await Review.findAll({
       attributes: [
         'productId',
-        [sequelize.fn('COUNT', sequelize.col('id')), 'reviewCount'],
+        [sequelize.fn('COUNT', sequelize.col('Review.id')), 'reviewCount'],
         [sequelize.fn('AVG', sequelize.col('rating')), 'avgRating']
       ],
       include: [
@@ -327,8 +382,8 @@ exports.getProductAnalytics = async (req, res) => {
         }
       ],
       where: whereClause,
-      group: ['productId'],
-      order: [[sequelize.fn('COUNT', sequelize.col('id')), 'DESC']],
+      group: ['productId', 'product.id'],
+      order: [[sequelize.fn('COUNT', sequelize.col('Review.id')), 'DESC']],
       limit: 10
     });
     
@@ -336,7 +391,7 @@ exports.getProductAnalytics = async (req, res) => {
     const mostInquiredProducts = await Inquiry.findAll({
       attributes: [
         'productId',
-        [sequelize.fn('COUNT', sequelize.col('id')), 'inquiryCount']
+        [sequelize.fn('COUNT', sequelize.col('Inquiry.id')), 'inquiryCount']
       ],
       include: [
         {
@@ -346,8 +401,8 @@ exports.getProductAnalytics = async (req, res) => {
         }
       ],
       where: whereClause,
-      group: ['productId'],
-      order: [[sequelize.fn('COUNT', sequelize.col('id')), 'DESC']],
+      group: ['productId', 'product.id'],
+      order: [[sequelize.fn('COUNT', sequelize.col('Inquiry.id')), 'DESC']],
       limit: 10
     });
     
@@ -358,12 +413,14 @@ exports.getProductAnalytics = async (req, res) => {
       mostInquiredProducts
     });
   } catch (error) {
+    console.error('Error in getProductAnalytics:', error);
     res.status(500).json({ message: 'Server error', error: error.message });
   }
 };
 
 exports.getUserAnalytics = async (req, res) => {
   try {
+    console.log('Analytics users endpoint called');
     const { startDate, endDate } = req.query;
     
     // Get current date and date 30 days ago
@@ -406,7 +463,7 @@ exports.getUserAnalytics = async (req, res) => {
     const userRegistrations = await User.findAll({
       attributes: [
         [groupByClause, 'date'],
-        [sequelize.fn('COUNT', sequelize.col('id')), 'userCount']
+        [sequelize.fn('COUNT', sequelize.col('User.id')), 'userCount']
       ],
       where: whereClause,
       group: ['date'],
@@ -417,8 +474,8 @@ exports.getUserAnalytics = async (req, res) => {
     const topCustomers = await Order.findAll({
       attributes: [
         'userId',
-        [sequelize.fn('COUNT', sequelize.col('id')), 'orderCount'],
-        [sequelize.fn('SUM', sequelize.col('total')), 'totalSpent']
+        [sequelize.fn('COUNT', sequelize.col('Order.id')), 'orderCount'],
+        [sequelize.fn('SUM', sequelize.col('Order.total')), 'totalSpent']
       ],
       include: [
         {
@@ -430,8 +487,8 @@ exports.getUserAnalytics = async (req, res) => {
       where: {
         paymentStatus: 'paid'
       },
-      group: ['userId'],
-      order: [[sequelize.fn('SUM', sequelize.col('total')), 'DESC']],
+      group: ['userId', 'user.id'],
+      order: [[sequelize.fn('SUM', sequelize.col('Order.total')), 'DESC']],
       limit: 10
     });
     
@@ -439,7 +496,7 @@ exports.getUserAnalytics = async (req, res) => {
     const userRetention = await Order.findAll({
       attributes: [
         'userId',
-        [sequelize.fn('COUNT', sequelize.col('id')), 'orderCount']
+        [sequelize.fn('COUNT', sequelize.col('Order.id')), 'orderCount']
       ],
       include: [
         {
@@ -448,9 +505,9 @@ exports.getUserAnalytics = async (req, res) => {
           attributes: ['id', 'name', 'email']
         }
       ],
-      group: ['userId'],
-      having: sequelize.literal('COUNT(id) > 1'),
-      order: [[sequelize.fn('COUNT', sequelize.col('id')), 'DESC']]
+      group: ['userId', 'user.id'],
+      having: sequelize.literal('COUNT(Order.id) > 1'),
+      order: [[sequelize.fn('COUNT', sequelize.col('Order.id')), 'DESC']]
     });
     
     // Total users
@@ -478,6 +535,7 @@ exports.getUserAnalytics = async (req, res) => {
       retentionRate
     });
   } catch (error) {
+    console.error('Error in getUserAnalytics:', error);
     res.status(500).json({ message: 'Server error', error: error.message });
   }
 };

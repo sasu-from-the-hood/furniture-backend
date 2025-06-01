@@ -5,9 +5,11 @@ module.exports = (sequelize, DataTypes) => {
   class Category extends Model {
     static associate(models) {
       // Category can have many products
+      // Adding onDelete: 'CASCADE' to allow deletion of categories with products
       Category.hasMany(models.Product, {
         foreignKey: 'categoryId',
-        as: 'products'
+        as: 'products',
+        onDelete: 'CASCADE'
       });
       
       // Categories can have parent categories (for subcategories)
@@ -16,9 +18,11 @@ module.exports = (sequelize, DataTypes) => {
         as: 'parent'
       });
       
+      // Adding onDelete: 'CASCADE' to automatically delete subcategories when parent is deleted
       Category.hasMany(Category, {
         foreignKey: 'parentId',
-        as: 'subcategories'
+        as: 'subcategories',
+        onDelete: 'CASCADE'
       });
     }
   }
