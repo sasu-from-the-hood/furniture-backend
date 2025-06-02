@@ -313,13 +313,11 @@ export const dataProvider = (role = "Super Admin") => ({
       if (Array.isArray(params.data.file)) {
         // Multiple files
         params.data.file.forEach((fileItem) => {
-          if (fileItem && fileItem.rawFile) {
-            formData.append("files", fileItem.rawFile); // Use 'files' for multiple file uploads
-          }
+            formData.append("files", fileItem);
         });
-      } else if (params.data.file && params.data.file.rawFile) {
+      } else if (params.data.file && params.data.file) {
         // Single file
-        formData.append("file", params.data.file.rawFile);
+        formData.append("file", params.data.file);
       }
 
       // Add other data fields
@@ -328,6 +326,8 @@ export const dataProvider = (role = "Super Admin") => ({
           formData.append(key, params.data[key]);
         }
       });
+
+      console.log(Object.fromEntries(formData))
 
       // Use fetch directly to handle FormData
       return fetch(`${apiUrl}${endpoint}`, {
@@ -375,23 +375,25 @@ export const dataProvider = (role = "Super Admin") => ({
       if (Array.isArray(params.data.file)) {
         // Multiple files
         params.data.file.forEach((fileItem) => {
-          if (fileItem) {
-            if (fileItem.rawFile) {
-              formData.append("files", fileItem.rawFile); // Use 'files' for multiple file uploads
-            }
+          if (fileItem.src) {
+              formData.append("images", fileItem.src); // Use 'files' for multiple file uploads
+          }else{
+             formData.append("files", fileItem)
           }
         });
-      } else if (params.data.file && params.data.file.rawFile) {
+      } else if (params.data.file && params.data.file) {
         // Single file
-        formData.append("file", params.data.file.rawFile);
+        formData.append("file", params.data.file);
       }
 
       // Add other data fields
       Object.keys(params.data).forEach((key) => {
-        if (key !== "file") {
+        if (key !== "file" && key !== "images") {
           formData.append(key, params.data[key]);
         }
       });
+
+      console.log(Object.fromEntries(formData))
 
       // Use fetch directly to handle FormData
       return fetch(`${apiUrl}${endpoint}/${params.id}`, {
