@@ -63,6 +63,7 @@ exports.validateUpdateProduct = (req, res, next) => {
     }
   }
 
+  
   next();
 };
 

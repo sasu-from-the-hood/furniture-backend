@@ -5,6 +5,7 @@ import light from "../assets/light.jpg";
 import decor from "../assets/decor.jpg";
 import { ShopContext } from "../compontes/context/ShopContext.jsx";
 import { IMAGE_URL } from "../config/index.js";
+import FeaturedCollection from "../compontes/sections/FeaturedCollection";
 
 function Home() {
   const { products, handleCategoryChange, siteSettings, getSettings } =
@@ -322,50 +323,8 @@ function Home() {
           </div>
         </div>
       </section>
-      <section className="py-16 bg-gray-50 px-6 md:px-16">
-        <h2 className="text-3xl md:text-4xl font-light text-center mb-8 tracking-wide">
-          Trending{" "}
-          <span className="text-green-900 font-semibold">Products</span>
-        </h2>
-
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
-          {Array.isArray(products) && products.length > 0 ? (
-            products.slice(0, 4).map((product, index) => (
-              <div key={index} className="text-center">
-                <div className="relative h-96 w-full rounded-xl overflow-hidden shadow-lg border border-gray-200 bg-white group transition-transform duration-300 ease-in-out hover:shadow-2xl hover:-translate-y-2">
-                  {/* Image with Hover Overlay */}
-                  <img
-                    src={
-                      IMAGE_URL + product?.images[0]?.imageUrl ||
-                      "/default-image.jpg"
-                    }
-                    alt={product?.title}
-                    className="h-96 w-full object-contain transition-transform duration-300 ease-in-out group-hover:scale-105"
-                  />
-                  {/* Subtle overlay effect */}
-                  <div className="absolute inset-0 bg-black opacity-0 group-hover:opacity-10 transition-opacity duration-300"></div>
-                </div>
-
-                {/* Product Name */}
-                <p className="font-medium text-lg text-gray-800 mt-3 tracking-wide">
-                  {product?.name}
-                </p>
-
-                {/* CTA Button */}
-                <Link to={`/product/${product?.id}`}>
-                  <button className="mt-4 px-5 py-2 bg-green-900 text-white font-medium rounded-lg shadow-md hover:bg-green-800 hover:shadow-lg transition-all duration-300">
-                    View Product
-                  </button>
-                </Link>
-              </div>
-            ))
-          ) : (
-            <div className="col-span-4 text-center py-8">
-              <p className="text-gray-500">Loading products...</p>
-            </div>
-          )}
-        </div>
-      </section>
+      {/* Trending Products Section */}
+      <FeaturedCollection />
       <section className="py-24 bg-emerald-900 text-white">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
           <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold mb-6">
