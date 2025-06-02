@@ -363,14 +363,14 @@ function Cart() {
 
                   {/* Product Info */}
                   <div className="col-span-4 flex items-center space-x-4">
-                    <img
+                    {/*<img
                       src={
                         item.furniture.image ||
                         "/placeholder.svg?height=80&width=80"
                       }
                       alt={item.furniture.title}
                       className="w-16 h-16 object-cover rounded"
-                    />
+                    />*/}
                     <div>
                       <h3 className="font-semibold text-gray-900">
                         {item.furniture.title || "Product"}
