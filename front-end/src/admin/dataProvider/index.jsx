@@ -18,11 +18,11 @@ const getEndpoint = (resource, role) => {
       analytics: "/superadmin/analytics",
       inquiries: "/superadmin/inquiries",
       dashboard: "/superadmin/dashboard",
-            // Analytics specific endpoints
+      // Analytics specific endpoints
       "analytics/dashboard": "/superadmin/analytics/dashboard",
       "analytics/sales": "/superadmin/analytics/sales",
       "analytics/products": "/superadmin/analytics/products",
-      "analytics/users": "/superadmin/analytics/users"
+      "analytics/users": "/superadmin/analytics/users",
     },
     admin: {
       products: "/superadmin/products",
@@ -37,9 +37,13 @@ const getEndpoint = (resource, role) => {
       orders: "/sales/orders",
       invoices: "/sales/invoices",
       customers: "/sales/customers",
-      dashboard: "/superadmin/dashboard",
       users: "/superadmin/users",
       inquiries: "/superadmin/inquiries",
+      dashboard: "/superadmin/dashboard",
+      "analytics/dashboard": "/superadmin/analytics/dashboard",
+      "analytics/sales": "/superadmin/analytics/sales",
+      "analytics/products": "/superadmin/analytics/products",
+      "analytics/users": "/superadmin/analytics/users",
     },
   };
 
