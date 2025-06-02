@@ -3,7 +3,7 @@ import logo from "../../assets/logo.jpg";
 import rug from "../../assets/rug.jpeg";
 import lamp from "../../assets/lux lamp.jpeg";
 import chair from "../../assets/about1.jpeg";
-
+import { Link } from "react-router-dom";
 
 const About = () => {
   return (
@@ -11,7 +11,6 @@ const About = () => {
       {/* Hero Section */}
 
       <section
-
         className="mt-4 md:mt-0 relative w-full h-screen flex items-center justify-center bg-cover bg-center"
         style={{ backgroundImage: "url('/src/assets/servicePic.jpg')" }}
       >
@@ -23,9 +22,12 @@ const About = () => {
           <p className="text-lg md:text-2xl mt-4">
             Crafting timeless elegance and exclusivity.
           </p>
-          <button className="mt-6 px-6 py-3 font-bold text-orange-300 text-2xl  rounded-md hover:bg-opacity-80 hover:text-black">
+          <Link
+            to="/shop"
+            className="mt-6 px-6 py-3 font-bold text-orange-300 text-2xl  rounded-md hover:bg-opacity-80 hover:text-black"
+          >
             Shop Now
-          </button>
+          </Link>
         </div>
       </section>
 
@@ -33,7 +35,9 @@ const About = () => {
       <section className="py-16 px-6 md:px-16">
         <div className="md:flex md:items-center md:space-x-8">
           <div className="md:w-1/2">
-            <h2 className="text-3xl md:text-4xl font-extralight mb-4">Who <span className="text-green-950 font-bold">We</span> Are</h2>
+            <h2 className="text-3xl md:text-4xl font-extralight mb-4">
+              Who <span className="text-green-950 font-bold">We</span> Are
+            </h2>
             <p className="text-lg text-gray-600">
               European Luxury is more than a brand; it's a statement of timeless
               elegance. Founded with a passion for sophistication and an eye for
@@ -80,7 +84,8 @@ const About = () => {
       {/* Signature Collection Section */}
       <section className="py-16 px-6 md:px-16">
         <h2 className="text-3xl md:text-4xl font-extralight text-center mb-8">
-          Our Signature <span className="text-green-950 font-bold">Collection</span>
+          Our Signature{" "}
+          <span className="text-green-950 font-bold">Collection</span>
         </h2>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
           <div className="text-center">
@@ -157,11 +162,15 @@ const About = () => {
       {/* Call to Action Section */}
       <section className="py-16 bg-black text-white text-center">
         <h2 className="text-3xl md:text-4xl font-extralight mb-4">
-          Experience the World of European <span className="text-green-950 font-bold">Luxury</span>
+          Experience the World of European{" "}
+          <span className="text-green-950 font-bold">Luxury</span>
         </h2>
-        <button className="mt-4 px-6 text-xl py-3  text-green-800 hover:text-white font-semibold rounded-md hover:bg-opacity-80">
+        <Link
+          to="/shop"
+          className="mt-4 px-6 text-xl py-3  text-green-800 hover:text-white font-semibold rounded-md hover:bg-opacity-80"
+        >
           Shop Now
-        </button>
+        </Link>
       </section>
     </div>
   );

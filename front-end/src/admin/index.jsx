@@ -85,7 +85,11 @@ const AdminApp = () => {
               icon={SettingIcon}
             />
             <Resource name="inquiries" list={InquiryList} icon={InquiryIcon} />
-            <Resource name="analytics" icon={AnalyticsIcon}  list={AnalyticsPage} />
+            <Resource
+              name="analytics"
+              icon={AnalyticsIcon}
+              list={AnalyticsPage}
+            />
           </>
         );
 
@@ -104,6 +108,13 @@ const AdminApp = () => {
               edit={ProductEdit}
               create={ProductCreate}
               icon={ProductIcon}
+            />
+            <Resource
+              name="categories"
+              list={CategoryList}
+              edit={CategoryEdit}
+              create={CategoryCreate}
+              icon={CategoryIcon}
             />
             {/* <Resource
               name="orders"
@@ -132,6 +143,11 @@ const AdminApp = () => {
             <Resource name="inquiries" list={InquiryList} icon={InquiryIcon} />
             <Resource name="invoices" icon={InvoiceIcon} />
             <Resource name="customers" icon={UserIcon} />
+            <Resource
+              name="analytics"
+              icon={AnalyticsIcon}
+              list={AnalyticsPage}
+            />
           </>
         );
 

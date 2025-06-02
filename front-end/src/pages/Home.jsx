@@ -222,12 +222,18 @@ function Home() {
               master artisans using the finest materials.
             </p>
             <div className="flex flex-col sm:flex-row gap-4">
-              <button className="bg-amber-600 hover:bg-amber-700 text-white px-8 py-3 rounded-md font-semibold transition-colors duration-200">
+              <Link
+                to="/shop"
+                className="bg-amber-600 hover:bg-amber-700 text-white px-8 py-3 rounded-md font-semibold transition-colors duration-200"
+              >
                 Explore Collection
-              </button>
-              <button className="bg-white hover:bg-gray-100 text-gray-900 px-8 py-3 rounded-md font-semibold transition-colors duration-200">
+              </Link>
+              <Link
+                to="/about"
+                className="bg-white hover:bg-gray-100 text-gray-900 px-8 py-3 rounded-md font-semibold transition-colors duration-200"
+              >
                 Learn More
-              </button>
+              </Link>
             </div>
           </div>
         </div>
@@ -371,9 +377,12 @@ function Home() {
             sourced from around the world.
           </p>
           <div>
-            <button className="bg-amber-400 hover:bg-amber-500 text-emerald-900 font-semibold px-8 py-3 rounded transition-colors duration-200">
+            <Link
+              to="/about"
+              className="bg-amber-400 hover:bg-amber-500 text-emerald-900 font-semibold px-8 py-3 rounded transition-colors duration-200"
+            >
               Our Story
-            </button>
+            </Link>
           </div>
         </div>
       </section>
