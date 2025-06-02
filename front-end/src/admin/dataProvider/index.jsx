@@ -78,7 +78,6 @@ export const dataProvider = (role = "Super Admin") => ({
         Authorization: `Bearer ${localStorage.getItem("token")}`,
       }),
     }).then(({ json }) => {
-      // Handle different response formats
       let data = [];
       let total = 0;
 
